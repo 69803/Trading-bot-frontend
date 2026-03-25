@@ -12,6 +12,7 @@ import {
   Activity,
   LogOut,
   Zap,
+  BookOpen,
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { cn } from "@/lib/utils";
@@ -23,7 +24,8 @@ const navItems = [
   { label: "Strategy",   href: "/strategy",   icon: Cpu,             description: "EMA + RSI config" },
   { label: "Signals",    href: "/signals",    icon: Activity,        description: "Live signals & decisions" },
   { label: "Backtest",   href: "/backtest",   icon: BarChart2,       description: "Historical testing" },
-  { label: "Risk",       href: "/risk",       icon: Shield,          description: "Exposure limits" },
+  { label: "Risk",          href: "/risk",          icon: Shield,   description: "Exposure limits" },
+  { label: "Contabilidad", href: "/accounting",   icon: BookOpen, description: "Balance & P&L" },
 ];
 
 export function Sidebar() {
