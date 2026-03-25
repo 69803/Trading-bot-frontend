@@ -18,6 +18,7 @@ import {
   Zap,
   History,
   X,
+  Trash2,
 } from "lucide-react";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -216,6 +217,7 @@ export default function StrategyPage() {
     "symbols"
   );
   const [showLogsModal, setShowLogsModal] = useState(false);
+  const [clearingLogs, setClearingLogs] = useState(false);
 
   // ── Queries ────────────────────────────────────────────────────────────────
 
@@ -259,6 +261,17 @@ export default function StrategyPage() {
   }, [botConfig]);
 
   // ── Mutations ──────────────────────────────────────────────────────────────
+
+  const handleClearLogs = async () => {
+    setClearingLogs(true);
+    try {
+      await api.delete("/bot/logs");
+      qc.setQueryData(["bot-logs"], { logs: [] });
+      qc.setQueryData(["bot-logs-history"], { logs: [] });
+    } finally {
+      setClearingLogs(false);
+    }
+  };
 
   const startMutation = useMutation({
     mutationFn: async () => {
@@ -937,12 +950,23 @@ export default function StrategyPage() {
                   </span>
                 )}
               </div>
-              <button
-                onClick={() => setShowLogsModal(false)}
-                className="p-1 rounded hover:bg-white/[0.06] text-slate-600 hover:text-slate-300 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={handleClearLogs}
+                  disabled={clearingLogs}
+                  title="Clear all logs"
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs text-slate-500 hover:text-red-400 hover:bg-red-500/[0.08] disabled:opacity-40 transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  {clearingLogs ? "Clearing…" : "Clear"}
+                </button>
+                <button
+                  onClick={() => setShowLogsModal(false)}
+                  className="p-1 rounded hover:bg-white/[0.06] text-slate-600 hover:text-slate-300 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
             {/* Last log full text */}
