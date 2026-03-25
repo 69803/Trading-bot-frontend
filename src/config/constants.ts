@@ -1,4 +1,4 @@
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://trading-bot-9rvm.onrender.com/api/v1";
 export const SYMBOLS = [
   "AAPL", "TSLA", "MSFT", "NVDA",
   "AMZN", "META", "GOOGL", "NFLX",
