@@ -238,8 +238,8 @@ export default function OrdersPage() {
                         <td className="py-3 text-right font-mono text-xs tabular-nums">
                           {o.status === "filled" ? (
                             o.realized_pnl !== null && o.realized_pnl !== undefined ? (
-                              <span className={o.realized_pnl >= 0 ? "text-emerald-400" : "text-red-400"}>
-                                {o.realized_pnl >= 0 ? "+" : ""}{o.realized_pnl.toFixed(2)}
+                              <span className={Number(o.realized_pnl) >= 0 ? "text-emerald-400" : "text-red-400"}>
+                                {Number(o.realized_pnl) >= 0 ? "+" : ""}{Number(o.realized_pnl).toFixed(2)}
                               </span>
                             ) : o.side === "buy" ? (
                               <span className="text-blue-400 text-[10px] font-semibold">OPEN</span>
