@@ -352,6 +352,20 @@ export default function TradePage() {
   // ── Delete closed position ──────────────────────────────────────────────────
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [showClearHistoryConfirm, setShowClearHistoryConfirm] = useState(false);
+
+  const clearHistoryMutation = useMutation({
+    mutationFn: async () => api.delete("/portfolio/positions"),
+    onSuccess: () => {
+      setShowClearHistoryConfirm(false);
+      setDeleteError(null);
+      qc.invalidateQueries({ queryKey: ["positions-all"] });
+      qc.invalidateQueries({ queryKey: ["balance"] });
+    },
+    onError: () => {
+      setDeleteError("Failed to clear trade history. Please try again.");
+    },
+  });
 
   const deleteMutation = useMutation({
     mutationFn: async (posId: string) => {
@@ -1000,10 +1014,16 @@ export default function TradePage() {
       {/* ── Closed positions / history ────────────────────────────────────────── */}
       {closedPositions.length > 0 && (
         <div className="bg-[#0b0e11] border border-[#1e2329] rounded-xl overflow-hidden">
-          <div className="px-4 py-2.5 border-b border-[#1e2329]">
+          <div className="px-4 py-2.5 border-b border-[#1e2329] flex items-center justify-between">
             <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
               Trade History ({closedPositions.length})
             </span>
+            <button
+              onClick={() => setShowClearHistoryConfirm(true)}
+              className="text-[10px] font-semibold text-slate-500 hover:text-red-400 hover:bg-red-500/[0.06] px-2 py-1 rounded transition-all border border-transparent hover:border-red-500/20"
+            >
+              Clear All
+            </button>
           </div>
           {deleteError && (
             <p className="text-xs text-red-400 bg-red-500/[0.08] border border-red-500/20 rounded-lg px-3 py-2 mx-4 mt-2">
@@ -1099,6 +1119,40 @@ export default function TradePage() {
                 })}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* ── Clear history confirmation modal ─────────────────────────────── */}
+      {showClearHistoryConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+          <div className="w-full max-w-sm bg-[#0D1626] border border-white/[0.08] rounded-2xl shadow-2xl">
+            <div className="px-5 py-4 border-b border-white/[0.06]">
+              <h2 className="text-sm font-semibold text-slate-100">Clear Trade History</h2>
+              <p className="text-xs text-slate-500 mt-0.5">This cannot be undone</p>
+            </div>
+            <div className="px-5 py-5 space-y-4">
+              <p className="text-sm text-slate-400">
+                Permanently delete all <span className="text-slate-200 font-semibold">{closedPositions.length} closed trades</span> from your history? Open positions are not affected.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowClearHistoryConfirm(false)}
+                  className="flex-1 py-2.5 rounded-lg border border-white/[0.08] text-slate-400 text-sm font-semibold hover:bg-white/[0.04] transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => clearHistoryMutation.mutate()}
+                  disabled={clearHistoryMutation.isPending}
+                  className="flex-1 py-2.5 rounded-lg bg-red-600 hover:bg-red-500 disabled:bg-red-600/50 text-white text-sm font-semibold transition-all flex items-center justify-center gap-2"
+                >
+                  {clearHistoryMutation.isPending ? (
+                    <><span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />Deleting...</>
+                  ) : "Delete All"}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
