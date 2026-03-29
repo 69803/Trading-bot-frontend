@@ -12,7 +12,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonTable } from "@/components/ui/SkeletonCard";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { SYMBOLS } from "@/config/constants";
-import { ChevronLeft, ChevronRight, Plus, X, ClipboardList, SlidersHorizontal } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, X, ClipboardList, SlidersHorizontal, Trash2 } from "lucide-react";
 
 const PAGE_SIZE = 20;
 const STATUS_OPTIONS = ["", "pending", "filled", "cancelled", "rejected"];
@@ -42,6 +42,7 @@ export default function OrdersPage() {
   const [symbolFilter, setSymbolFilter] = useState("");
   const [page, setPage] = useState(0);
   const [showModal, setShowModal] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [form, setForm] = useState<NewOrderForm>(DEFAULT_FORM);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -60,6 +61,14 @@ export default function OrdersPage() {
   const cancelMutation = useMutation({
     mutationFn: async (id: string) => api.delete(`/orders/${id}`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["orders"] }),
+  });
+
+  const clearAllMutation = useMutation({
+    mutationFn: async () => api.delete("/orders"),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["orders"] });
+      setShowClearConfirm(false);
+    },
   });
 
   const createMutation = useMutation({
@@ -118,14 +127,26 @@ export default function OrdersPage() {
           <h1 className="text-xl font-semibold text-slate-100">Orders</h1>
           <p className="text-sm text-slate-600 mt-0.5">{total} orders total</p>
         </div>
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={() => { setShowModal(true); setFormError(null); setForm(DEFAULT_FORM); }}
-        >
-          <Plus className="w-4 h-4" />
-          New Order
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowClearConfirm(true)}
+            disabled={total === 0}
+            className="text-slate-500 hover:text-red-400 hover:bg-red-500/[0.06]"
+          >
+            <Trash2 className="w-4 h-4" />
+            Clear All
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => { setShowModal(true); setFormError(null); setForm(DEFAULT_FORM); }}
+          >
+            <Plus className="w-4 h-4" />
+            New Order
+          </Button>
+        </div>
       </div>
 
       {/* Filters bar */}
@@ -299,6 +320,52 @@ export default function OrdersPage() {
           </>
         )}
       </Card>
+
+      {/* Clear All Confirmation Modal */}
+      {showClearConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+          <div className="w-full max-w-sm bg-[#0D1626] border border-white/[0.08] rounded-2xl shadow-2xl">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
+              <div className="flex items-center gap-2">
+                <Trash2 className="w-4 h-4 text-red-400" />
+                <h2 className="text-sm font-semibold text-slate-100">Clear All Orders</h2>
+              </div>
+              <button
+                onClick={() => setShowClearConfirm(false)}
+                className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-300 hover:bg-white/[0.06] transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="px-5 py-5 space-y-4">
+              <p className="text-sm text-slate-400">
+                This will permanently delete all <span className="text-slate-200 font-semibold">{total} orders</span> from your history. This action cannot be undone.
+              </p>
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setShowClearConfirm(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <button
+                  onClick={() => clearAllMutation.mutate()}
+                  disabled={clearAllMutation.isPending}
+                  className="flex-1 py-2.5 rounded-lg bg-red-600 hover:bg-red-500 disabled:bg-red-600/50 text-white text-sm font-semibold transition-all flex items-center justify-center gap-2"
+                >
+                  {clearAllMutation.isPending ? (
+                    <><span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />Deleting...</>
+                  ) : (
+                    <><Trash2 className="w-4 h-4" />Delete All</>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* New Order Modal */}
       {showModal && (
