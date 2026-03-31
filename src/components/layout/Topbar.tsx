@@ -49,7 +49,7 @@ export function Topbar() {
   const { data } = useQuery({
     queryKey: ["market-quotes-topbar"],
     queryFn: async () => {
-      const res = await api.get<QuotesResponse>("/market/quote?symbols=EURUSD,BTCUSD");
+      const res = await api.get<QuotesResponse>("/market/quote?symbols=EURUSD,BTCUSDT");
       return res.data;
     },
     refetchInterval: 5000,

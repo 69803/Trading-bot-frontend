@@ -30,7 +30,7 @@
 //   Energy Comm.      → orange   #f97316
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type AssetType = "stock" | "etf" | "forex" | "commodity";
+export type AssetType = "stock" | "etf" | "forex" | "commodity" | "crypto";
 
 export interface AssetInfo {
   name: string;
@@ -176,6 +176,14 @@ export const ASSET_INFO: Record<string, AssetInfo> = {
   QQQ:   { name: "Invesco QQQ Trust",       color: "#16a34a", type: "etf" },
   DIA:   { name: "SPDR Dow Jones ETF",      color: "#15803d", type: "etf" },
   IWM:   { name: "iShares Russell 2000",    color: "#14532d", type: "etf" },
+
+  // ── Crypto (Binance USDT pairs) ──────────────────────────────────────────
+  BTCUSDT: { name: "Bitcoin / USDT",      color: "#f97316", type: "crypto", decimals: 0 },
+  ETHUSDT: { name: "Ethereum / USDT",     color: "#6366f1", type: "crypto", decimals: 2 },
+  BNBUSDT: { name: "BNB / USDT",          color: "#f59e0b", type: "crypto", decimals: 2 },
+  SOLUSDT: { name: "Solana / USDT",       color: "#8b5cf6", type: "crypto", decimals: 2 },
+  ADAUSDT: { name: "Cardano / USDT",      color: "#0ea5e9", type: "crypto", decimals: 4 },
+  XRPUSDT: { name: "XRP / USDT",          color: "#0284c7", type: "crypto", decimals: 4 },
 
   // ── Forex: Majors ────────────────────────────────────────────────────────
   "EUR/USD": { name: "Euro / US Dollar",        color: "#3b82f6", type: "forex", decimals: 5 },

@@ -25,6 +25,6 @@ export const ASSET_CLASSES: Record<string, { label: string; symbols: string[] }>
   },
   crypto: {
     label: "Crypto",
-    symbols: ["BTCUSD", "ETHUSD", "BNBUSD", "SOLUSD", "ADAUSD", "XRPUSD"],
+    symbols: ["BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT", "ADAUSDT", "XRPUSDT"],
   },
 };
