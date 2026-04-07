@@ -867,6 +867,7 @@ export default function TradePage() {
                 timeframe={timeframe}
                 isLoading={candlesLoading && candles.length === 0}
                 positions={openPositions}
+                onTimeframeChange={setTimeframe}
               />
             </div>
           </div>

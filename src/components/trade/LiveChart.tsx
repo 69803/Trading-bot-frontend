@@ -15,6 +15,8 @@ import {
 import { format } from "date-fns";
 import type { Candle, Position } from "@/types";
 
+const TIMEFRAME_STEPS = ["1m", "5m", "1h", "4h", "1d"];
+
 interface LiveChartProps {
   candles: Candle[];
   livePrice: number | null;
@@ -22,6 +24,7 @@ interface LiveChartProps {
   timeframe: string;
   isLoading: boolean;
   positions?: Position[];
+  onTimeframeChange?: (tf: string) => void;
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -168,8 +171,28 @@ export default function LiveChart({
   timeframe,
   isLoading,
   positions = [],
+  onTimeframeChange,
 }: LiveChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Scroll-to-zoom: wheel up = zoom out (larger TF), wheel down = zoom in (smaller TF)
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || !onTimeframeChange) return;
+    const handler = (e: WheelEvent) => {
+      e.preventDefault();
+      const idx = TIMEFRAME_STEPS.indexOf(timeframe);
+      if (e.deltaY < 0) {
+        // scroll up → zoom out → larger timeframe
+        if (idx < TIMEFRAME_STEPS.length - 1) onTimeframeChange(TIMEFRAME_STEPS[idx + 1]);
+      } else {
+        // scroll down → zoom in → smaller timeframe
+        if (idx > 0) onTimeframeChange(TIMEFRAME_STEPS[idx - 1]);
+      }
+    };
+    el.addEventListener("wheel", handler, { passive: false });
+    return () => el.removeEventListener("wheel", handler);
+  }, [timeframe, onTimeframeChange]);
 
   // Track container pixel height for the live-dot overlay positioning
   const [containerHeight, setContainerHeight] = useState(0);
