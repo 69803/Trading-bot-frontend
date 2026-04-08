@@ -14,7 +14,7 @@ export default function TrendMasterPage() {
     setLoading(true);
     setError(null);
     try {
-      await api.post("/api/v1/bot/activate/trendmaster");
+      await api.post("/bot/activate/trendmaster");
       router.push("/dashboard");
     } catch (e: any) {
       setError(e?.response?.data?.detail ?? "Error al activar el bot");
