@@ -287,12 +287,9 @@ export default function LiveChart({
     });
   }, [chartData, openPositions]);
 
-  // Chart gradient direction (computed from real data, not padded)
-  const isUp = chartData.length >= 2
-    ? chartData[chartData.length - 1].close >= chartData[0].close
-    : true;
-  const strokeColor = isUp ? "#10b981" : "#ef4444";
-  const gradId = `grad-${symbol}-${isUp ? "up" : "dn"}`;
+  // Price curve is always white — entry lines use green/red per side
+  const CURVE_COLOR = "rgba(255,255,255,0.80)";
+  const gradId = `grad-${symbol}`;
 
   const maxTicks = 7;
   const tickInterval = displayData.length > maxTicks
@@ -372,9 +369,9 @@ export default function LiveChart({
         >
           <defs>
             <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={strokeColor} stopOpacity={0.18} />
-              <stop offset="70%" stopColor={strokeColor} stopOpacity={0.03} />
-              <stop offset="100%" stopColor={strokeColor} stopOpacity={0} />
+              <stop offset="0%" stopColor={CURVE_COLOR} stopOpacity={0.12} />
+              <stop offset="70%" stopColor={CURVE_COLOR} stopOpacity={0.02} />
+              <stop offset="100%" stopColor={CURVE_COLOR} stopOpacity={0} />
             </linearGradient>
           </defs>
 
@@ -498,27 +495,27 @@ export default function LiveChart({
               />
             ))}
 
-          {/* ── Price area line ───────────────────────────────────────────── */}
+          {/* ── Price area line — always white ────────────────────────────── */}
           <Area
             type="monotone"
             dataKey="close"
-            stroke={strokeColor}
+            stroke={CURVE_COLOR}
             strokeWidth={1.5}
             fill={`url(#${gradId})`}
             dot={false}
-            activeDot={{ r: 3, fill: strokeColor, strokeWidth: 0 }}
+            activeDot={{ r: 3, fill: CURVE_COLOR, strokeWidth: 0 }}
             isAnimationActive={false}
             connectNulls={false}
           />
 
-          {/* ── Live price dot — anchored to last real candle on the curve ── */}
+          {/* ── Live price dot — white, anchored to last real candle ───────── */}
           {livePrice !== null && livePrice > 0 && chartData.length > 0 && (
             <ReferenceDot
               x={chartData[chartData.length - 1].timestamp}
               y={livePrice}
               r={0}
               shape={(props: { cx?: number; cy?: number }) => (
-                <LiveDotShape cx={props.cx} cy={props.cy} color={strokeColor} />
+                <LiveDotShape cx={props.cx} cy={props.cy} color={CURVE_COLOR} />
               )}
             />
           )}
