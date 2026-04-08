@@ -70,6 +70,7 @@ export default function BotsPage() {
   // Bots that have a dedicated detail page
   const DETAIL_PAGES: Record<string, string> = {
     trendmaster: "/bots/trendmaster",
+    scalperx:    "/bots/scalperx",
   };
 
   const select = (id: string) => {
