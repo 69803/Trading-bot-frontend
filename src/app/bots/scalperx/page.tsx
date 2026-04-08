@@ -40,7 +40,7 @@ export default function ScalperXPage() {
           src="/bot-scalperx.png"
           alt="ScalperX"
           fill
-          style={{ objectFit: "contain", objectPosition: "center" }}
+          style={{ objectFit: "cover", objectPosition: "center" }}
           priority
         />
       </div>
