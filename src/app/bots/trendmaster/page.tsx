@@ -2,9 +2,25 @@
 
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useState } from "react";
+import api from "@/lib/api";
 
 export default function TrendMasterPage() {
-  const router = useRouter();
+  const router  = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState<string | null>(null);
+
+  const handleIniciar = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await api.post("/api/v1/bot/activate/trendmaster");
+      router.push("/dashboard");
+    } catch (e: any) {
+      setError(e?.response?.data?.detail ?? "Error al activar el bot");
+      setLoading(false);
+    }
+  };
 
   return (
     <div style={{
@@ -106,25 +122,35 @@ export default function TrendMasterPage() {
 
           {/* Iniciar button */}
           <button
-            onClick={() => router.push("/trade?bot=trendmaster")}
+            onClick={handleIniciar}
+            disabled={loading}
             style={{
               width: "100%",
               padding: "13px 0",
-              background: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+              background: loading
+                ? "rgba(22,163,74,0.5)"
+                : "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
               border: "none",
               borderRadius: 10,
               color: "#fff",
               fontSize: 16,
               fontWeight: 700,
-              cursor: "pointer",
+              cursor: loading ? "not-allowed" : "pointer",
               letterSpacing: 0.3,
               boxShadow: "0 4px 20px rgba(22,163,74,0.4)",
+              transition: "filter 0.2s",
             }}
-            onMouseEnter={e => (e.currentTarget.style.filter = "brightness(1.1)")}
+            onMouseEnter={e => { if (!loading) e.currentTarget.style.filter = "brightness(1.1)"; }}
             onMouseLeave={e => (e.currentTarget.style.filter = "brightness(1)")}
           >
-            Iniciar
+            {loading ? "Activando..." : "Iniciar"}
           </button>
+
+          {error && (
+            <p style={{ color: "#f87171", fontSize: 13, marginTop: 10, textAlign: "center" }}>
+              {error}
+            </p>
+          )}
         </div>
       </div>
 
