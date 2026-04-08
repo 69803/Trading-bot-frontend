@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useRef, useEffect } from "react";
+import { useMemo, useRef, useEffect, useState } from "react";
 import {
   AreaChart,
   Area,
@@ -153,6 +153,29 @@ function EntryDotShape({
   );
 }
 
+// ── Live price dot (SVG animated) ────────────────────────────────────────────
+function LiveDotShape({
+  cx = 0,
+  cy = 0,
+  color,
+}: {
+  cx?: number;
+  cy?: number;
+  color: string;
+}) {
+  return (
+    <g>
+      {/* Pulsing ring */}
+      <circle cx={cx} cy={cy} r={8} fill={color} fillOpacity={0.15}>
+        <animate attributeName="r" values="5;12;5" dur="2s" repeatCount="indefinite" />
+        <animate attributeName="fill-opacity" values="0.3;0;0.3" dur="2s" repeatCount="indefinite" />
+      </circle>
+      {/* Solid core */}
+      <circle cx={cx} cy={cy} r={4} fill={color} stroke="#0b0e11" strokeWidth={1.5} />
+    </g>
+  );
+}
+
 // ── Chart margins (must match AreaChart margin prop) ──────────────────────────
 const MARGIN_TOP    = 20;
 const MARGIN_BOTTOM = 4;
@@ -193,21 +216,6 @@ export default function LiveChart({
     el.addEventListener("wheel", handler, { passive: false });
     return () => el.removeEventListener("wheel", handler);
   }, [timeframe, onTimeframeChange]);
-
-  // Track container pixel height for the live-dot overlay positioning
-  const [containerHeight, setContainerHeight] = useState(0);
-
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver((entries) => {
-      for (const e of entries) setContainerHeight(e.contentRect.height);
-    });
-    ro.observe(el);
-    // Set initial value synchronously
-    setContainerHeight(el.getBoundingClientRect().height);
-    return () => ro.disconnect();
-  }, []);
 
   // Floating tooltip state for entry dots
   const [dotTooltip, setDotTooltip] = useState<{
@@ -291,18 +299,6 @@ export default function LiveChart({
     ? Math.floor(displayData.length / maxTicks)
     : 0;
 
-  // ── Live-dot overlay Y-position ────────────────────────────────────────────
-  // Compute pixel Y of the live price within the container.
-  // Chart plot area = [MARGIN_TOP, containerHeight - MARGIN_BOTTOM]
-  const liveDotY = useMemo(() => {
-    if (!containerHeight || !livePrice || livePrice <= 0) return null;
-    const plotHeight = containerHeight - MARGIN_TOP - MARGIN_BOTTOM;
-    const range = maxPrice - minPrice;
-    if (range <= 0) return null;
-    const normalized = (livePrice - minPrice) / range;
-    return MARGIN_TOP + plotHeight * (1 - normalized);
-  }, [containerHeight, livePrice, minPrice, maxPrice]);
-
   // Handlers for dot tooltip
   const handleDotEnter = (cx: number, cy: number, label: string, color: string) => {
     setDotTooltip({ x: cx, y: cy, label, color });
@@ -368,40 +364,6 @@ export default function LiveChart({
         </div>
       )}
 
-      {/* ── Blinking live-price dot overlay ───────────────────────────────── */}
-      {liveDotY !== null && (
-        <div
-          className="absolute pointer-events-none z-10"
-          style={{
-            right: MARGIN_RIGHT - 6,
-            top: liveDotY,
-            transform: "translateY(-50%)",
-          }}
-        >
-          {/* Pulsing ring (animate-ping scales from center and fades) */}
-          <span
-            className="absolute inline-flex rounded-full animate-ping"
-            style={{
-              width: 14,
-              height: 14,
-              top: -3,
-              left: -3,
-              background: strokeColor,
-              opacity: 0.45,
-            }}
-          />
-          {/* Solid core dot */}
-          <span
-            className="relative inline-flex rounded-full"
-            style={{
-              width: 8,
-              height: 8,
-              background: strokeColor,
-              boxShadow: `0 0 8px 2px ${strokeColor}80`,
-            }}
-          />
-        </div>
-      )}
 
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
@@ -548,6 +510,18 @@ export default function LiveChart({
             isAnimationActive={false}
             connectNulls={false}
           />
+
+          {/* ── Live price dot — anchored to last real candle on the curve ── */}
+          {livePrice !== null && livePrice > 0 && chartData.length > 0 && (
+            <ReferenceDot
+              x={chartData[chartData.length - 1].timestamp}
+              y={livePrice}
+              r={0}
+              shape={(props: { cx?: number; cy?: number }) => (
+                <LiveDotShape cx={props.cx} cy={props.cy} color={strokeColor} />
+              )}
+            />
+          )}
 
           {/* ── Entry point dots (rendered last = on top) ─────────────────── */}
           {entryDots.map(({ pos, timestamp }) => {
