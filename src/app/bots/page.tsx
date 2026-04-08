@@ -67,8 +67,14 @@ export default function BotsPage() {
     };
   }, []);
 
+  // Bots that have a dedicated detail page
+  const DETAIL_PAGES: Record<string, string> = {
+    trendmaster: "/bots/trendmaster",
+  };
+
   const select = (id: string) => {
-    router.push(`/trade?bot=${id}`);
+    const dest = DETAIL_PAGES[id] ?? `/trade?bot=${id}`;
+    router.push(dest);
   };
 
   return (
