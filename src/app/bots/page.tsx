@@ -72,6 +72,7 @@ export default function BotsPage() {
     trendmaster: "/bots/trendmaster",
     scalperx:    "/bots/scalperx",
     cryptobot:   "/bots/cryptobot",
+    piphunter:   "/bots/piphunter",
   };
 
   const select = (id: string) => {
