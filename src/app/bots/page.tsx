@@ -71,6 +71,7 @@ export default function BotsPage() {
   const DETAIL_PAGES: Record<string, string> = {
     trendmaster: "/bots/trendmaster",
     scalperx:    "/bots/scalperx",
+    cryptobot:   "/bots/cryptobot",
   };
 
   const select = (id: string) => {
