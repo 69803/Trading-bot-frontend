@@ -74,6 +74,7 @@ export default function BotsPage() {
     cryptobot:   "/bots/cryptobot",
     piphunter:   "/bots/piphunter",
     safeguard:   "/bots/safeguard",
+    combo:       "/bots/combo",
   };
 
   const select = (id: string) => {
@@ -204,8 +205,62 @@ export default function BotsPage() {
           ))}
         </div>
 
+        {/* ── Combo bot ─────────────────────────────────────────────── */}
+        <div style={{
+          display: "flex", flexDirection: "column", alignItems: "center",
+          marginTop: 48, width: "100%", maxWidth: 1100,
+        }}>
+          <div style={{
+            position: "relative",
+            width: "65%",
+            borderRadius: 20,
+            overflow: "hidden",
+            boxShadow: "0 0 80px rgba(99,102,241,0.3), 0 30px 80px rgba(0,0,0,0.6)",
+          }}>
+            <Image
+              src="/bot-inte.png"
+              alt="Combo Bot"
+              width={700}
+              height={400}
+              style={{ width: "100%", height: "auto", display: "block" }}
+            />
+            {/* overlay button covering the full card */}
+            <button
+              onClick={() => select("combo")}
+              className="bot-select-btn"
+              style={{ position: "absolute", inset: 0 }}
+            >
+              Seleccionar
+            </button>
+          </div>
+
+          <p style={{
+            color: "rgba(255,255,255,0.55)", fontSize: 14,
+            textAlign: "center", marginTop: 16, maxWidth: 480, lineHeight: 1.6,
+          }}>
+            Combinación inteligente de todos los bots — TrendMaster, ScalerX, CryptoBot, PipHunter y SafeGuard operando juntos para máxima diversificación.
+          </p>
+
+          <button
+            onClick={() => select("combo")}
+            style={{
+              marginTop: 18,
+              padding: "12px 36px",
+              background: "linear-gradient(135deg, #6366f1 0%, #0ea5e9 100%)",
+              border: "none", borderRadius: 10,
+              color: "#fff", fontSize: 15, fontWeight: 700,
+              cursor: "pointer", letterSpacing: 0.4,
+              boxShadow: "0 4px 24px rgba(99,102,241,0.4)",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.filter = "brightness(1.15)")}
+            onMouseLeave={e => (e.currentTarget.style.filter = "brightness(1)")}
+          >
+            Seleccionar →
+          </button>
+        </div>
+
         {/* sub-text */}
-        <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 13, marginTop: 24, textAlign: "center" }}>
+        <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 13, marginTop: 32, textAlign: "center" }}>
           Puedes cambiar de bot en cualquier momento desde tu panel de control.
         </p>
       </div>
