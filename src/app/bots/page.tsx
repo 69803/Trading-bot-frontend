@@ -73,6 +73,7 @@ export default function BotsPage() {
     scalperx:    "/bots/scalperx",
     cryptobot:   "/bots/cryptobot",
     piphunter:   "/bots/piphunter",
+    safeguard:   "/bots/safeguard",
   };
 
   const select = (id: string) => {
