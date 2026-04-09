@@ -43,7 +43,7 @@ export default function SafeGuardPage() {
       {/* ── Info panel — left side ─────────────────────────────────────── */}
       <div style={{
         position: "absolute", zIndex: 2,
-        left: "4%", top: "50%", transform: "translateY(-50%)",
+        left: "50%", top: "50%", transform: "translate(-50%, -50%)",
         width: 300,
         background: "rgba(2,10,20,0.72)",
         backdropFilter: "blur(16px)",
