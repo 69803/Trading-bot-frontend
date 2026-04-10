@@ -230,13 +230,20 @@ function BotProfileView({ profile, botStatus }: { profile: BotProfile; botStatus
           <h1 className="text-xl font-semibold text-slate-100">{profile.name}</h1>
           <p className="text-sm text-slate-500 mt-0.5">{profile.strategyType} · {profile.market}</p>
         </div>
-        <div
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold"
-          style={{ background: `${profile.color}15`, borderColor: `${profile.color}35`, color: profile.color }}
-        >
-          <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: profile.color }} />
-          Activo
-        </div>
+        {botStatus?.is_running ? (
+          <div
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold"
+            style={{ background: `${profile.color}15`, borderColor: `${profile.color}35`, color: profile.color }}
+          >
+            <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: profile.color }} />
+            Activo
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold bg-slate-800/60 border-slate-700/50 text-slate-500">
+            <span className="w-2 h-2 rounded-full bg-slate-600" />
+            Detenido
+          </div>
+        )}
       </div>
 
       {/* Description + condition */}
@@ -386,17 +393,31 @@ function BotProfileView({ profile, botStatus }: { profile: BotProfile; botStatus
       {activeTab === "runtime" && (
         <div className="px-5 py-4 bg-[#0d1117] border border-[#1e2329] rounded-xl">
           <p className="text-[10px] text-slate-600 uppercase tracking-widest font-semibold mb-3">Estado en tiempo real</p>
+
+          {/* Bot detenido — banner informativo */}
+          {botStatus && !botStatus.is_running && (
+            <div className="flex items-center gap-2.5 px-3 py-2.5 mb-4 rounded-lg bg-slate-800/60 border border-slate-700/50 text-slate-500 text-xs">
+              <span className="w-2 h-2 rounded-full bg-slate-600 shrink-0" />
+              El bot no está ejecutándose actualmente — no hay nuevos logs ni ciclos activos.
+              {botStatus.last_cycle_at && (
+                <span className="ml-auto shrink-0 text-slate-600">
+                  Último ciclo: {new Date(botStatus.last_cycle_at).toLocaleTimeString()}
+                </span>
+              )}
+            </div>
+          )}
+
           {botStatus ? (
             <div className="space-y-0">
-              <StatusRow label="Running"         value={botStatus.is_running ? "✅ Sí" : "⏹ No"} />
-              <StatusRow label="Iniciado"        value={botStatus.started_at ?? "—"} mono />
-              <StatusRow label="Último ciclo"    value={botStatus.last_run_at ?? "—"} mono />
-              <StatusRow label="Próximo ciclo"   value={botStatus.next_run_at ?? "—"} mono />
-              <StatusRow label="Ciclos"          value={String(botStatus.cycles_run)} mono />
+              <StatusRow label="Running"             value={botStatus.is_running ? "✅ Sí" : "⏹ No"} />
+              <StatusRow label="Iniciado"            value={botStatus.started_at ?? "—"} mono />
+              <StatusRow label="Último ciclo"        value={botStatus.last_run_at ?? "—"} mono />
+              <StatusRow label="Próximo ciclo"       value={botStatus.next_run_at ?? "—"} mono />
+              <StatusRow label="Ciclos"              value={String(botStatus.cycles_run)} mono />
               <StatusRow label="Posiciones abiertas" value={String(botStatus.open_positions_count)} />
-              <StatusRow label="Último log"      value={botStatus.last_log ?? "—"} />
+              <StatusRow label="Último log"          value={botStatus.last_log ?? "—"} />
               {botStatus.last_error && (
-                <StatusRow label="Último error"  value={<span className="text-red-400">{botStatus.last_error}</span>} />
+                <StatusRow label="Último error" value={<span className="text-red-400">{botStatus.last_error}</span>} />
               )}
             </div>
           ) : (

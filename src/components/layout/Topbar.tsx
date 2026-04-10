@@ -46,6 +46,15 @@ export function Topbar() {
   const user      = useAuthStore((s) => s.user);
   const { tabs, removeTab, selectedBotId, setSelectedBot } = useBotTabsStore();
 
+  // Cambio 2/3: same queryKey as Dashboard → React Query serves from cache, zero extra requests
+  const { data: botStatus } = useQuery<{ is_running: boolean }>({
+    queryKey: ["bot-status"],
+    queryFn: async () => (await api.get("/bot/status")).data,
+    refetchInterval: 10000,
+    staleTime: 5000,
+  });
+  const isRunning = botStatus?.is_running ?? false;
+
   const meta =
     Object.entries(pageTitles).find(([path]) => pathname.startsWith(path))?.[1] ||
     { title: "TradePaper", subtitle: "" };
@@ -84,27 +93,36 @@ export function Topbar() {
         {tabs.length > 0 && (
           <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide min-w-0">
             {tabs.map((tab) => {
-              const isActive = tab.id === selectedBotId;
+              const isSelected = tab.id === selectedBotId;
+              // Tab shows as "live" only when the backend confirms the bot is running
+              const isLive = isRunning;
               return (
                 <div
                   key={tab.id}
                   onClick={() => setSelectedBot(tab.id)}
                   className="flex items-center gap-1.5 px-2.5 py-1 rounded-md border shrink-0 group cursor-pointer transition-all duration-150"
                   style={{
-                    background: isActive ? `${tab.color}28` : `${tab.color}10`,
-                    borderColor: isActive ? `${tab.color}70` : `${tab.color}28`,
-                    boxShadow: isActive ? `0 0 0 1px ${tab.color}40` : "none",
+                    background: isSelected
+                      ? isLive ? `${tab.color}28` : "rgba(30,35,42,0.8)"
+                      : isLive ? `${tab.color}10` : "rgba(20,25,32,0.6)",
+                    borderColor: isSelected
+                      ? isLive ? `${tab.color}70` : "rgba(100,116,139,0.35)"
+                      : isLive ? `${tab.color}28` : "rgba(100,116,139,0.18)",
+                    boxShadow: isSelected && isLive ? `0 0 0 1px ${tab.color}40` : "none",
                   }}
                 >
-                  {/* Status dot */}
+                  {/* Status dot — pulses only when actually running */}
                   <span
-                    className="w-1.5 h-1.5 rounded-full animate-pulse shrink-0"
-                    style={{ background: tab.color }}
+                    className={`w-1.5 h-1.5 rounded-full shrink-0 ${isLive ? "animate-pulse" : ""}`}
+                    style={{ background: isLive ? tab.color : "#475569" }}
                   />
                   {/* Bot name */}
                   <span
                     className="text-[11px] font-semibold tracking-tight whitespace-nowrap"
-                    style={{ color: tab.color, opacity: isActive ? 1 : 0.7 }}
+                    style={{
+                      color: isLive ? tab.color : "#64748b",
+                      opacity: isSelected ? 1 : 0.7,
+                    }}
                   >
                     {tab.name}
                   </span>
@@ -112,7 +130,7 @@ export function Topbar() {
                   <button
                     onClick={(e) => { e.stopPropagation(); removeTab(tab.id); }}
                     className="ml-0.5 rounded-full p-0.5 opacity-40 hover:opacity-100 transition-opacity"
-                    style={{ color: tab.color }}
+                    style={{ color: isLive ? tab.color : "#64748b" }}
                     title={`Cerrar pestaña ${tab.name}`}
                   >
                     <X className="w-2.5 h-2.5" />
