@@ -13,7 +13,7 @@ export const BOT_META: Record<string, { name: string; color: string }> = {
   trendmaster: { name: "TrendMaster", color: "#22c55e" },
   scalperx:    { name: "Mean Reversion", color: "#3b82f6" },
   cryptobot:   { name: "Momentum",    color: "#a855f7" },
-  piphunter:   { name: "PipHunter",   color: "#fb923c" },
+  piphunter:   { name: "Breakout",    color: "#fb923c" },
   safeguard:   { name: "SafeGuard",   color: "#14b8a6" },
   combo:       { name: "Master Bot",  color: "#6366f1" },
 };
@@ -167,7 +167,7 @@ export const BOT_PROFILES: Record<string, BotProfile> = {
   },
 
   piphunter: {
-    id: "piphunter", name: "PipHunter", color: "#fb923c",
+    id: "piphunter", name: "Breakout", color: "#fb923c",
     strategyType: "Breakout",
     market: "Forex",
     description: "Detecta rupturas de niveles clave y entra cuando el precio explota. Gestión de riesgo estricta con TP escalonado.",

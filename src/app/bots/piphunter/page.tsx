@@ -5,7 +5,7 @@ import { useState } from "react";
 import api from "@/lib/api";
 import { useBotTabsStore } from "@/store/botTabsStore";
 
-export default function PipHunterPage() {
+export default function BreakoutPage() {
   const router  = useRouter();
   const { addTab, hasTab } = useBotTabsStore();
   const [loading, setLoading]   = useState(false);
@@ -14,7 +14,7 @@ export default function PipHunterPage() {
 
   const handleIniciar = async () => {
     if (hasTab("piphunter")) {
-      setDupError("Ya el Bot PipHunter está operando en este momento");
+      setDupError("Ya el Bot Breakout está operando en este momento");
       setTimeout(() => setDupError(null), 4000);
       return;
     }
@@ -88,7 +88,7 @@ export default function PipHunterPage() {
           color: "#fff", fontSize: 32, fontWeight: 800,
           margin: "0 0 12px", letterSpacing: -0.3,
         }}>
-          PipHunter
+          Breakout
         </h1>
 
         <p style={{
