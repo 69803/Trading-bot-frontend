@@ -238,7 +238,7 @@ export default function BotsPage() {
             color: "rgba(255,255,255,0.55)", fontSize: 14,
             textAlign: "center", marginTop: 16, maxWidth: 480, lineHeight: 1.6,
           }}>
-            Combinación inteligente de todos los bots — TrendMaster, Mean Reversion, CryptoBot, PipHunter y SafeGuard operando juntos para máxima diversificación.
+            Combinación inteligente de todos los bots — TrendMaster, Mean Reversion, Momentum, PipHunter y SafeGuard operando juntos para máxima diversificación.
           </p>
 
           <button

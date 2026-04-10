@@ -14,7 +14,7 @@ export default function CryptoBotPage() {
 
   const handleIniciar = async () => {
     if (hasTab("cryptobot")) {
-      setDupError("Ya el Bot Crypto Bot está operando en este momento");
+      setDupError("Ya el Bot Momentum está operando en este momento");
       setTimeout(() => setDupError(null), 4000);
       return;
     }
@@ -81,21 +81,21 @@ export default function CryptoBotPage() {
           borderRadius: 20, padding: "4px 14px", marginBottom: 18,
         }}>
           <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#a855f7", display: "inline-block" }} />
-          <span style={{ color: "#d8b4fe", fontSize: 12, fontWeight: 600, letterSpacing: 0.5 }}>MOMENTUM · CRYPTO</span>
+          <span style={{ color: "#d8b4fe", fontSize: 12, fontWeight: 600, letterSpacing: 0.5 }}>MOMENTUM · FOREX</span>
         </div>
 
         <h1 style={{
           color: "#fff", fontSize: 32, fontWeight: 800,
           margin: "0 0 12px", letterSpacing: -0.3,
         }}>
-          Crypto Bot
+          Momentum
         </h1>
 
         <p style={{
           color: "rgba(255,255,255,0.65)", fontSize: 14,
           lineHeight: 1.65, margin: "0 0 28px",
         }}>
-          Estrategia de momentum para criptomonedas. Entra cuando el impulso está confirmado y deja correr las ganancias.
+          Lo que sube, sigue subiendo. Entra cuando el momentum está confirmado con Score ≥ 6/8 y deja correr la posición.
         </p>
 
         {/* Iniciar button */}
