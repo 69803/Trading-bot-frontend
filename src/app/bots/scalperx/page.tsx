@@ -14,7 +14,7 @@ export default function MeanReversionPage() {
 
   const handleIniciar = async () => {
     if (hasTab("scalperx")) {
-      setDupError("Ya el Bot ScalerX está operando en este momento");
+      setDupError("Ya el Bot Mean Reversion está operando en este momento");
       setTimeout(() => setDupError(null), 4000);
       return;
     }

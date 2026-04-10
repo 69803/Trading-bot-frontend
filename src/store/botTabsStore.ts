@@ -11,7 +11,7 @@ export interface BotTab {
 
 export const BOT_META: Record<string, { name: string; color: string }> = {
   trendmaster: { name: "TrendMaster", color: "#22c55e" },
-  scalperx:    { name: "ScalerX",     color: "#3b82f6" },
+  scalperx:    { name: "Mean Reversion", color: "#3b82f6" },
   cryptobot:   { name: "Crypto Bot",  color: "#a855f7" },
   piphunter:   { name: "PipHunter",   color: "#fb923c" },
   safeguard:   { name: "SafeGuard",   color: "#14b8a6" },
@@ -104,7 +104,7 @@ export const BOT_PROFILES: Record<string, BotProfile> = {
   },
 
   scalperx: {
-    id: "scalperx", name: "ScalerX", color: "#3b82f6",
+    id: "scalperx", name: "Mean Reversion", color: "#3b82f6",
     strategyType: "Mean Reversion",
     market: "Forex",
     description: "Opera cuando el precio se aleja demasiado del equilibrio y espera el regreso a la media. Solo activo en mercados laterales.",
