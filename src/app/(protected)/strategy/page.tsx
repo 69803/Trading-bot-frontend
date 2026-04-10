@@ -51,6 +51,7 @@ interface BotStatus {
   is_running: boolean;
   started_at: string | null;
   last_run_at: string | null;
+  last_cycle_at: string | null;
   next_run_at: string | null;
   cycles_run: number;
   open_positions_count: number;
