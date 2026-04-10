@@ -447,26 +447,29 @@ export default function StrategyPage() {
   // ── Queries ────────────────────────────────────────────────────────────────
 
   const { data: botStatus, refetch: refetchStatus } = useQuery<BotStatus>({
-    queryKey: ["bot-status"],
-    queryFn: async () => (await api.get("/bot/status")).data,
+    queryKey: ["bot-status", selectedBotId],
+    queryFn: async () => (await api.get(`/bot/status?bot_id=${selectedBotId}`)).data,
     refetchInterval: 5000,
+    enabled: !!selectedBotId,
   });
 
   const { data: botConfig } = useQuery<BotConfig>({
-    queryKey: ["bot-config"],
-    queryFn: async () => (await api.get("/bot/config")).data,
+    queryKey: ["bot-config", selectedBotId],
+    queryFn: async () => (await api.get(`/bot/config?bot_id=${selectedBotId}`)).data,
+    enabled: !!selectedBotId,
   });
 
   const { data: logsData } = useQuery<{ logs: BotLog[] }>({
-    queryKey: ["bot-logs"],
-    queryFn: async () => (await api.get("/bot/logs?limit=30")).data,
+    queryKey: ["bot-logs", selectedBotId],
+    queryFn: async () => (await api.get(`/bot/logs?limit=30&bot_id=${selectedBotId}`)).data,
     refetchInterval: 10000,
+    enabled: !!selectedBotId,
   });
 
   const { data: logsHistoryData, isLoading: logsHistoryLoading } = useQuery<{ logs: BotLog[] }>({
-    queryKey: ["bot-logs-history"],
-    queryFn: async () => (await api.get("/bot/logs?limit=200")).data,
-    enabled: showLogsModal,
+    queryKey: ["bot-logs-history", selectedBotId],
+    queryFn: async () => (await api.get(`/bot/logs?limit=200&bot_id=${selectedBotId}`)).data,
+    enabled: showLogsModal && !!selectedBotId,
     refetchInterval: showLogsModal ? 10000 : false,
   });
 
@@ -490,9 +493,10 @@ export default function StrategyPage() {
   const handleClearLogs = async () => {
     setClearingLogs(true);
     try {
-      await api.delete("/bot/logs");
-      qc.setQueryData(["bot-logs"], { logs: [] });
-      qc.setQueryData(["bot-logs-history"], { logs: [] });
+      const botParam = selectedBotId ? `?bot_id=${selectedBotId}` : "";
+      await api.delete(`/bot/logs${botParam}`);
+      qc.setQueryData(["bot-logs", selectedBotId], { logs: [] });
+      qc.setQueryData(["bot-logs-history", selectedBotId], { logs: [] });
     } finally {
       setClearingLogs(false);
     }
@@ -513,7 +517,7 @@ export default function StrategyPage() {
 
       let saveResp;
       try {
-        saveResp = await api.put("/bot/config", payload);
+        saveResp = await api.put(`/bot/config?bot_id=${selectedBotId}`, payload);
         console.log("[StartBot:3] PUT /bot/config succeeded. Status:", saveResp.status, "Body:", saveResp.data);
       } catch (saveErr: unknown) {
         const axiosErr = saveErr as { response?: { status: number; data: unknown }; message?: string };
@@ -525,7 +529,7 @@ export default function StrategyPage() {
       console.log("[StartBot:4] Sending POST /bot/start");
       let startResp;
       try {
-        startResp = await api.post("/bot/start");
+        startResp = await api.post(`/bot/start?bot_id=${selectedBotId}`);
         console.log("[StartBot:5] POST /bot/start succeeded. Status:", startResp.status, "Body:", startResp.data);
       } catch (startErr: unknown) {
         const axiosErr = startErr as { response?: { status: number; data: unknown }; message?: string };
@@ -539,8 +543,8 @@ export default function StrategyPage() {
     onSuccess: (data) => {
       console.log("[StartBot:6] onSuccess. Bot started:", data);
       setStartError(null);
-      qc.invalidateQueries({ queryKey: ["bot-config"] });
-      qc.invalidateQueries({ queryKey: ["bot-status"] });
+      qc.invalidateQueries({ queryKey: ["bot-config", selectedBotId] });
+      qc.invalidateQueries({ queryKey: ["bot-status", selectedBotId] });
       refetchStatus();
     },
     onError: (err: unknown) => {
@@ -551,7 +555,7 @@ export default function StrategyPage() {
   });
 
   const stopMutation = useMutation({
-    mutationFn: async () => (await api.post("/bot/stop")).data,
+    mutationFn: async () => (await api.post(`/bot/stop?bot_id=${selectedBotId}`)).data,
     onSuccess: () => refetchStatus(),
   });
 
@@ -565,13 +569,13 @@ export default function StrategyPage() {
         max_daily_loss_pct: config.max_daily_loss_pct,
         max_position_size_pct: config.max_position_size_pct,
       };
-      return (await api.put("/bot/config", payload)).data;
+      return (await api.put(`/bot/config?bot_id=${selectedBotId}`, payload)).data;
     },
     onSuccess: () => {
       console.log("[SaveConfig] Saved successfully. Symbols:", config.symbols);
       setSaved(true);
-      qc.invalidateQueries({ queryKey: ["bot-config"] });
-      qc.invalidateQueries({ queryKey: ["bot-status"] });
+      qc.invalidateQueries({ queryKey: ["bot-config", selectedBotId] });
+      qc.invalidateQueries({ queryKey: ["bot-status", selectedBotId] });
       setTimeout(() => setSaved(false), 3000);
     },
     onError: (err) => {

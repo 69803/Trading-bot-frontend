@@ -46,6 +46,7 @@ import {
   LayoutGrid,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useBotTabsStore } from "@/store/botTabsStore";
 
 function DepositModal({
   onClose,
@@ -155,6 +156,7 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
 export default function DashboardPage() {
   const qc = useQueryClient();
   const router = useRouter();
+  const { selectedBotId } = useBotTabsStore();
   const [showReset, setShowReset] = useState(false);
   const [showDeposit, setShowDeposit] = useState(false);
 
@@ -171,25 +173,33 @@ export default function DashboardPage() {
   });
 
   const { data: openPositions } = useQuery<Position[]>({
-    queryKey: ["portfolio-positions"],
-    queryFn: async () => (await api.get("/portfolio/positions?open_only=true")).data,
+    queryKey: ["portfolio-positions", selectedBotId],
+    queryFn: async () => {
+      const botParam = selectedBotId ? `&bot_id=${selectedBotId}` : "";
+      return (await api.get(`/portfolio/positions?open_only=true${botParam}`)).data;
+    },
     refetchInterval: 15000,
   });
 
   const { data: tradesData } = useQuery<TradesResponse>({
-    queryKey: ["trades-recent"],
-    queryFn: async () => (await api.get("/trades?limit=10")).data,
+    queryKey: ["trades-recent", selectedBotId],
+    queryFn: async () => {
+      const botParam = selectedBotId ? `&bot_id=${selectedBotId}` : "";
+      return (await api.get(`/trades?limit=10${botParam}`)).data;
+    },
     refetchInterval: 15000,
   });
 
   const { data: botStatus, refetch: refetchBot } = useQuery<BotStatus>({
-    queryKey: ["bot-status"],
-    queryFn: async () => (await api.get("/bot/status")).data,
+    queryKey: ["bot-status", selectedBotId],
+    queryFn: async () => (await api.get(`/bot/status?bot_id=${selectedBotId}`)).data,
     refetchInterval: 10000,
+    enabled: !!selectedBotId,
   });
 
   const botMutation = useMutation({
-    mutationFn: async (action: "start" | "stop") => api.post(`/bot/${action}`),
+    mutationFn: async (action: "start" | "stop") =>
+      api.post(`/bot/${action}?bot_id=${selectedBotId}`),
     onSuccess: () => {
       refetchBot();
       qc.invalidateQueries({ queryKey: ["portfolio-summary"] });
