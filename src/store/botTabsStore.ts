@@ -14,7 +14,7 @@ export const BOT_META: Record<string, { name: string; color: string }> = {
   scalperx:    { name: "Mean Reversion", color: "#3b82f6" },
   cryptobot:   { name: "Momentum",    color: "#a855f7" },
   piphunter:   { name: "Breakout",    color: "#fb923c" },
-  safeguard:   { name: "SafeGuard",   color: "#14b8a6" },
+  safeguard:   { name: "Carry Trade", color: "#14b8a6" },
   combo:       { name: "Master Bot",  color: "#6366f1" },
 };
 
@@ -199,7 +199,7 @@ export const BOT_PROFILES: Record<string, BotProfile> = {
   },
 
   safeguard: {
-    id: "safeguard", name: "SafeGuard", color: "#14b8a6",
+    id: "safeguard", name: "Carry Trade", color: "#14b8a6",
     strategyType: "Carry Trade",
     market: "Forex (JPY pairs)",
     description: "Gana interés diario (swap) manteniendo posiciones en monedas de alta tasa. El tiempo trabaja a tu favor.",
