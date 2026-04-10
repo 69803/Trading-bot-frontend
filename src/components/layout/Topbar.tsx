@@ -44,7 +44,7 @@ export function Topbar() {
   const pathname  = usePathname();
   const router    = useRouter();
   const user      = useAuthStore((s) => s.user);
-  const { tabs, removeTab } = useBotTabsStore();
+  const { tabs, removeTab, selectedBotId, setSelectedBot } = useBotTabsStore();
 
   const meta =
     Object.entries(pageTitles).find(([path]) => pathname.startsWith(path))?.[1] ||
@@ -83,38 +83,43 @@ export function Topbar() {
         {/* Bot tabs — scrollable */}
         {tabs.length > 0 && (
           <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide min-w-0">
-            {tabs.map((tab) => (
-              <div
-                key={tab.id}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-md border shrink-0 group"
-                style={{
-                  background: `${tab.color}12`,
-                  borderColor: `${tab.color}30`,
-                }}
-              >
-                {/* Status dot */}
-                <span
-                  className="w-1.5 h-1.5 rounded-full animate-pulse shrink-0"
-                  style={{ background: tab.color }}
-                />
-                {/* Bot name */}
-                <span
-                  className="text-[11px] font-semibold tracking-tight whitespace-nowrap"
-                  style={{ color: tab.color }}
+            {tabs.map((tab) => {
+              const isActive = tab.id === selectedBotId;
+              return (
+                <div
+                  key={tab.id}
+                  onClick={() => setSelectedBot(tab.id)}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md border shrink-0 group cursor-pointer transition-all duration-150"
+                  style={{
+                    background: isActive ? `${tab.color}28` : `${tab.color}10`,
+                    borderColor: isActive ? `${tab.color}70` : `${tab.color}28`,
+                    boxShadow: isActive ? `0 0 0 1px ${tab.color}40` : "none",
+                  }}
                 >
-                  {tab.name}
-                </span>
-                {/* Close button */}
-                <button
-                  onClick={() => removeTab(tab.id)}
-                  className="ml-0.5 rounded-full p-0.5 opacity-40 hover:opacity-100 transition-opacity"
-                  style={{ color: tab.color }}
-                  title={`Cerrar pestaña ${tab.name}`}
-                >
-                  <X className="w-2.5 h-2.5" />
-                </button>
-              </div>
-            ))}
+                  {/* Status dot */}
+                  <span
+                    className="w-1.5 h-1.5 rounded-full animate-pulse shrink-0"
+                    style={{ background: tab.color }}
+                  />
+                  {/* Bot name */}
+                  <span
+                    className="text-[11px] font-semibold tracking-tight whitespace-nowrap"
+                    style={{ color: tab.color, opacity: isActive ? 1 : 0.7 }}
+                  >
+                    {tab.name}
+                  </span>
+                  {/* Close button */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); removeTab(tab.id); }}
+                    className="ml-0.5 rounded-full p-0.5 opacity-40 hover:opacity-100 transition-opacity"
+                    style={{ color: tab.color }}
+                    title={`Cerrar pestaña ${tab.name}`}
+                  >
+                    <X className="w-2.5 h-2.5" />
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

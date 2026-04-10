@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
+import { useBotTabsStore, BOT_META, symbolBelongsToBot } from "@/store/botTabsStore";
 import {
   TrendingUp,
   TrendingDown,
@@ -112,12 +113,38 @@ export default function AccountingPage() {
   const [toDate,   setToDate]   = useState(today());
   const [applied,  setApplied]  = useState({ from: firstOfMonth(), to: today() });
 
+  const { selectedBotId } = useBotTabsStore();
+
   const { data, isLoading, isError, refetch } = useQuery<AccountingSummary>({
     queryKey: ["accounting", applied.from, applied.to],
     queryFn: async () =>
       (await api.get(`/accounting/summary?from_date=${applied.from}&to_date=${applied.to}`)).data,
     staleTime: 30_000,
   });
+
+  // Filter + recompute when a bot is selected
+  const displayData = useMemo(() => {
+    if (!data) return null;
+    if (!selectedBotId) return data;
+
+    const trades = data.trades.filter((t) => symbolBelongsToBot(t.symbol, selectedBotId));
+    const wins   = trades.filter((t) => t.result === "win");
+    const losses = trades.filter((t) => t.result === "loss");
+    const totalProfit = wins.reduce((s, t)  => s + t.realized_pnl, 0);
+    const totalLoss   = losses.reduce((s, t) => s + t.realized_pnl, 0);
+    const netPnl      = trades.reduce((s, t) => s + t.realized_pnl, 0);
+    return {
+      ...data,
+      trades,
+      total_closed_trades: trades.length,
+      total_profit: totalProfit,
+      total_loss: totalLoss,
+      net_pnl: netPnl,
+      win_count: wins.length,
+      loss_count: losses.length,
+      win_rate: trades.length > 0 ? Math.round((wins.length / trades.length) * 100) : 0,
+    } as AccountingSummary;
+  }, [data, selectedBotId]);
 
   const handleApply = () => setApplied({ from: fromDate, to: toDate });
   const handleReset = () => {
@@ -128,7 +155,7 @@ export default function AccountingPage() {
     setApplied({ from: f, to: t });
   };
 
-  const netPositive = (data?.net_pnl ?? 0) >= 0;
+  const netPositive = (displayData?.net_pnl ?? 0) >= 0;
 
   return (
     <div className="flex-1 overflow-y-auto bg-[#060D18] min-h-screen">
@@ -210,45 +237,69 @@ export default function AccountingPage() {
           </div>
         )}
 
-        {data && !isLoading && (
+        {displayData && !isLoading && (
           <>
+            {/* Bot filter banner */}
+            {selectedBotId && (() => {
+              const meta = BOT_META[selectedBotId];
+              return (
+                <div
+                  className="flex items-center gap-2.5 px-4 py-2 rounded-xl border text-xs font-semibold"
+                  style={{
+                    background: `${meta.color}12`,
+                    borderColor: `${meta.color}35`,
+                    color: meta.color,
+                  }}
+                >
+                  <span
+                    className="w-2 h-2 rounded-full animate-pulse shrink-0"
+                    style={{ background: meta.color }}
+                  />
+                  Filtrando por <span className="font-bold">{meta.name}</span>
+                  <span className="ml-auto opacity-60 font-normal">
+                    {displayData.total_closed_trades} operaciones · solo símboles de este bot
+                  </span>
+                </div>
+              );
+            })()}
+
             {/* Summary cards */}
             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
               <StatCard
                 label="Ganancias"
-                value={`$${data.total_profit.toFixed(2)}`}
+                value={`$${displayData.total_profit.toFixed(2)}`}
                 icon={TrendingUp}
                 accent="green"
               />
               <StatCard
                 label="Pérdidas"
-                value={`$${Math.abs(data.total_loss).toFixed(2)}`}
+                value={`$${Math.abs(displayData.total_loss).toFixed(2)}`}
                 icon={TrendingDown}
                 accent="red"
               />
               <StatCard
                 label="Resultado neto"
-                value={`${netPositive ? "+" : ""}$${data.net_pnl.toFixed(2)}`}
+                value={`${netPositive ? "+" : ""}$${displayData.net_pnl.toFixed(2)}`}
                 icon={DollarSign}
                 accent={netPositive ? "green" : "red"}
               />
               <StatCard
                 label="Trades ganados"
-                value={String(data.win_count)}
-                sub={`de ${data.total_closed_trades} cerrados`}
+                value={String(displayData.win_count)}
+                sub={`de ${displayData.total_closed_trades} cerrados`}
                 icon={Trophy}
                 accent="yellow"
               />
               <StatCard
                 label="Trades perdidos"
-                value={String(data.loss_count)}
+                value={String(displayData.loss_count)}
                 icon={XCircle}
                 accent="purple"
               />
               <StatCard
                 label="Win rate"
-                value={`${data.win_rate}%`}
-                sub={`${data.total_closed_trades} operaciones`}
+                value={`${displayData.win_rate}%`}
+                sub={`${displayData.total_closed_trades} operaciones`}
                 icon={Percent}
                 accent="blue"
               />
@@ -261,12 +312,12 @@ export default function AccountingPage() {
                   <BarChart2 className="w-4 h-4 text-slate-600" />
                   <p className="text-sm font-semibold text-slate-300">Operaciones cerradas</p>
                   <span className="px-1.5 py-0.5 bg-white/[0.05] text-slate-600 text-[10px] rounded font-mono">
-                    {data.trades.length}
+                    {displayData.trades.length}
                   </span>
                 </div>
               </div>
 
-              {data.trades.length === 0 ? (
+              {displayData.trades.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 gap-2">
                   <BookOpen className="w-8 h-8 text-slate-800" />
                   <p className="text-sm text-slate-700">No hay operaciones en este rango</p>
@@ -284,7 +335,7 @@ export default function AccountingPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {data.trades.map((t) => (
+                      {displayData.trades.map((t) => (
                         <tr key={t.id} className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors">
                           <td className="px-4 py-2.5 font-mono text-slate-500 whitespace-nowrap">{fmt(t.closed_at)}</td>
                           <td className="px-4 py-2.5 font-semibold text-slate-200">{t.symbol}</td>

@@ -19,7 +19,10 @@ import {
   History,
   X,
   Trash2,
+  Star,
+  Shield,
 } from "lucide-react";
+import { useBotTabsStore, BOT_PROFILES, type BotProfile } from "@/store/botTabsStore";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -206,10 +209,210 @@ function StatusRow({ label, value, mono = false }: { label: string; value: React
   );
 }
 
+// ── Bot Profile View (read-only) ──────────────────────────────────────────────
+
+function BotProfileView({ profile, botStatus }: { profile: BotProfile; botStatus?: BotStatus }) {
+  const [activeTab, setActiveTab] = useState<"symbols" | "strategy" | "risk" | "runtime">("strategy");
+
+  const tabs = [
+    { id: "strategy" as const, label: "Estrategia" },
+    { id: "symbols"  as const, label: "Símbolos"  },
+    { id: "risk"     as const, label: "Riesgo"    },
+    { id: "runtime"  as const, label: "Runtime"   },
+  ];
+
+  return (
+    <div className="space-y-5">
+
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-semibold text-slate-100">{profile.name}</h1>
+          <p className="text-sm text-slate-500 mt-0.5">{profile.strategyType} · {profile.market}</p>
+        </div>
+        <div
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold"
+          style={{ background: `${profile.color}15`, borderColor: `${profile.color}35`, color: profile.color }}
+        >
+          <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: profile.color }} />
+          Activo
+        </div>
+      </div>
+
+      {/* Description + condition */}
+      <div className="px-5 py-4 bg-[#0d1117] border border-[#1e2329] rounded-xl space-y-2">
+        <p className="text-sm text-slate-300 leading-relaxed">{profile.description}</p>
+        <div className="flex items-center gap-2 pt-1">
+          <Shield className="w-3.5 h-3.5 shrink-0" style={{ color: profile.color }} />
+          <span className="text-xs text-slate-500">{profile.condition}</span>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 bg-[#0d1117] border border-[#1e2329] rounded-xl p-1">
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setActiveTab(t.id)}
+            className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+              activeTab === t.id
+                ? "text-white"
+                : "text-slate-600 hover:text-slate-400"
+            }`}
+            style={activeTab === t.id ? { background: `${profile.color}25`, color: profile.color } : {}}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab content */}
+      {activeTab === "strategy" && (
+        <div className="space-y-4">
+          {/* Timeframes */}
+          <div className="px-5 py-4 bg-[#0d1117] border border-[#1e2329] rounded-xl">
+            <p className="text-[10px] text-slate-600 uppercase tracking-widest font-semibold mb-3">Timeframes</p>
+            <div className="flex flex-wrap gap-2">
+              {profile.timeframes.map((tf) => (
+                <div
+                  key={tf.tf}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs"
+                  style={{
+                    background: tf.primary ? `${profile.color}15` : "transparent",
+                    borderColor: tf.primary ? `${profile.color}40` : "#1e2329",
+                    color: tf.primary ? profile.color : "#64748b",
+                  }}
+                >
+                  <span className="font-bold">{tf.tf}</span>
+                  <span className="opacity-70">{tf.role}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Indicators */}
+          <div className="px-5 py-4 bg-[#0d1117] border border-[#1e2329] rounded-xl">
+            <p className="text-[10px] text-slate-600 uppercase tracking-widest font-semibold mb-3">Indicadores</p>
+            <div className="space-y-2">
+              {profile.indicators.map((ind) => (
+                <div key={ind.name} className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-slate-300">{ind.name}</span>
+                  <span className="text-xs text-slate-600">{ind.desc}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Entry conditions */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="px-5 py-4 bg-[#0d1117] border border-emerald-500/20 rounded-xl">
+              <p className="text-[10px] text-emerald-500 uppercase tracking-widest font-semibold mb-3">Entrada LONG</p>
+              <ul className="space-y-1.5">
+                {profile.entryLong.map((c, i) => (
+                  <li key={i} className="text-xs text-slate-400 flex items-start gap-2">
+                    <span className="text-emerald-500/60 mt-0.5 shrink-0">›</span> {c}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="px-5 py-4 bg-[#0d1117] border border-red-500/20 rounded-xl">
+              <p className="text-[10px] text-red-500 uppercase tracking-widest font-semibold mb-3">Entrada SHORT</p>
+              <ul className="space-y-1.5">
+                {profile.entryShort.map((c, i) => (
+                  <li key={i} className="text-xs text-slate-400 flex items-start gap-2">
+                    <span className="text-red-500/60 mt-0.5 shrink-0">›</span> {c}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Emergency exit */}
+          <div className="px-5 py-4 bg-[#0d1117] border border-amber-500/20 rounded-xl">
+            <p className="text-[10px] text-amber-500 uppercase tracking-widest font-semibold mb-3">Salida de Emergencia</p>
+            <ul className="space-y-1.5">
+              {profile.emergencyExit.map((c, i) => (
+                <li key={i} className="text-xs text-slate-400 flex items-start gap-2">
+                  <span className="text-amber-500/60 mt-0.5 shrink-0">⚠</span> {c}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "symbols" && (
+        <div className="px-5 py-4 bg-[#0d1117] border border-[#1e2329] rounded-xl">
+          <p className="text-[10px] text-slate-600 uppercase tracking-widest font-semibold mb-4">Símbolos operados</p>
+          <div className="space-y-2">
+            {profile.symbolsList.map((s) => (
+              <div key={s.symbol} className="flex items-center justify-between py-2 border-b border-white/[0.04] last:border-0">
+                <span className="text-sm font-semibold text-slate-200">{s.symbol}</span>
+                <div className="flex gap-0.5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`w-3 h-3 ${i < s.stars ? "fill-current" : "opacity-20"}`}
+                      style={{ color: profile.color }}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {activeTab === "risk" && (
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {[
+              { label: "Stop Loss",       value: profile.risk.sl },
+              { label: "Take Profit",     value: profile.risk.tp },
+              { label: "Riesgo / Trade",  value: profile.risk.riskPerTrade },
+              { label: "Max Posiciones",  value: String(profile.risk.maxPositions) },
+              { label: "Daily Drawdown",  value: profile.risk.dailyDD },
+              { label: "Cooldown",        value: profile.risk.cooldown },
+            ].map((item) => (
+              <div key={item.label} className="px-4 py-3 bg-[#0d1117] border border-[#1e2329] rounded-xl">
+                <p className="text-[10px] text-slate-600 uppercase tracking-widest font-semibold mb-1">{item.label}</p>
+                <p className="text-sm font-bold text-slate-200">{item.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {activeTab === "runtime" && (
+        <div className="px-5 py-4 bg-[#0d1117] border border-[#1e2329] rounded-xl">
+          <p className="text-[10px] text-slate-600 uppercase tracking-widest font-semibold mb-3">Estado en tiempo real</p>
+          {botStatus ? (
+            <div className="space-y-0">
+              <StatusRow label="Running"         value={botStatus.is_running ? "✅ Sí" : "⏹ No"} />
+              <StatusRow label="Iniciado"        value={botStatus.started_at ?? "—"} mono />
+              <StatusRow label="Último ciclo"    value={botStatus.last_run_at ?? "—"} mono />
+              <StatusRow label="Próximo ciclo"   value={botStatus.next_run_at ?? "—"} mono />
+              <StatusRow label="Ciclos"          value={String(botStatus.cycles_run)} mono />
+              <StatusRow label="Posiciones abiertas" value={String(botStatus.open_positions_count)} />
+              <StatusRow label="Último log"      value={botStatus.last_log ?? "—"} />
+              {botStatus.last_error && (
+                <StatusRow label="Último error"  value={<span className="text-red-400">{botStatus.last_error}</span>} />
+              )}
+            </div>
+          ) : (
+            <p className="text-sm text-slate-600">Sin datos de runtime</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function StrategyPage() {
   const qc = useQueryClient();
+  const { selectedBotId } = useBotTabsStore();
   const [config, setConfig] = useState<Partial<BotConfig>>({});
   const [saved, setSaved] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
@@ -394,6 +597,16 @@ export default function StrategyPage() {
   ] as const;
 
   // ── Render ─────────────────────────────────────────────────────────────────
+
+  // When a bot tab is selected, show read-only profile panel instead
+  if (selectedBotId && BOT_PROFILES[selectedBotId]) {
+    return (
+      <BotProfileView
+        profile={BOT_PROFILES[selectedBotId]}
+        botStatus={botStatus}
+      />
+    );
+  }
 
   return (
     <div className="space-y-5">

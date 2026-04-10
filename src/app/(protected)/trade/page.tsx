@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import LiveChart from "@/components/trade/LiveChart";
 import AssetSelector from "@/components/trade/AssetSelector";
+import { useBotTabsStore, BOT_META, symbolBelongsToBot } from "@/store/botTabsStore";
 
 type Side = "buy" | "sell";
 type OrderType = "market" | "limit";
@@ -172,6 +173,7 @@ function AssetTab({
 // ─── Main page ────────────────────────────────────────────────────────────────
 export default function TradePage() {
   const qc = useQueryClient();
+  const { selectedBotId } = useBotTabsStore();
 
   // Multi-symbol state (IQ Option-style tab bar)
   const [pinnedSymbols, setPinnedSymbols] = useState<string[]>([SYMBOLS[0]]);
@@ -250,8 +252,8 @@ export default function TradePage() {
   });
 
   const positions = allPositions ?? [];
-  const openPositions  = positions.filter((p) => p.is_open);
-  const closedPositions = positions.filter((p) => !p.is_open);
+  const openPositions  = positions.filter((p) => p.is_open  && (!selectedBotId || symbolBelongsToBot(p.symbol, selectedBotId)));
+  const closedPositions = positions.filter((p) => !p.is_open && (!selectedBotId || symbolBelongsToBot(p.symbol, selectedBotId)));
 
   // Extra quotes for any open-position symbols not already pinned
   const openSymbols = openPositions.map((p) => p.symbol);
@@ -486,6 +488,30 @@ export default function TradePage() {
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col gap-4 h-full">
+
+      {/* ── Bot filter banner ───────────────────────────────────────────────── */}
+      {selectedBotId && (() => {
+        const meta = BOT_META[selectedBotId];
+        return (
+          <div
+            className="flex items-center gap-2.5 px-4 py-2 rounded-xl border text-xs font-semibold"
+            style={{
+              background: `${meta.color}12`,
+              borderColor: `${meta.color}35`,
+              color: meta.color,
+            }}
+          >
+            <span
+              className="w-2 h-2 rounded-full animate-pulse shrink-0"
+              style={{ background: meta.color }}
+            />
+            Mostrando posiciones de <span className="font-bold">{meta.name}</span>
+            <span className="ml-auto opacity-60 font-normal">
+              Solo símboles de este bot
+            </span>
+          </div>
+        );
+      })()}
 
       {/* ── Balance bar ────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-4 py-2.5 bg-[#0d1117] border border-[#1e2329] rounded-xl">
