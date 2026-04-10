@@ -27,7 +27,7 @@ export default function MasterBotPage() {
       height: "100vh",
       position: "relative",
       overflow: "hidden",
-      backgroundImage: "url('/bot-inte.png')",
+      backgroundImage: "url('/bot-combo.png')",
       backgroundSize: "cover",
       backgroundPosition: "center",
       backgroundRepeat: "no-repeat",
