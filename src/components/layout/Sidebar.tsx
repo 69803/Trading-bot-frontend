@@ -13,19 +13,21 @@ import {
   LogOut,
   Zap,
   BookOpen,
+  Bot,
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { label: "Dashboard",  href: "/dashboard", icon: LayoutDashboard, description: "Overview & P&L" },
-  { label: "Trade",      href: "/trade",      icon: TrendingUp,      description: "Place orders" },
-  { label: "Orders",     href: "/orders",     icon: ClipboardList,   description: "Order history" },
-  { label: "Strategy",   href: "/strategy",   icon: Cpu,             description: "EMA + RSI config" },
-  { label: "Signals",    href: "/signals",    icon: Activity,        description: "Live signals & decisions" },
-  { label: "Backtest",   href: "/backtest",   icon: BarChart2,       description: "Historical testing" },
-  { label: "Risk",          href: "/risk",          icon: Shield,   description: "Exposure limits" },
-  { label: "Contabilidad", href: "/accounting",   icon: BookOpen, description: "Balance & P&L" },
+  { label: "Dashboard",    href: "/dashboard",  icon: LayoutDashboard, description: "Overview & P&L" },
+  { label: "Bots",         href: "/bots",       icon: Bot,             description: "Seleccionar bot" },
+  { label: "Trade",        href: "/trade",      icon: TrendingUp,      description: "Place orders" },
+  { label: "Orders",       href: "/orders",     icon: ClipboardList,   description: "Order history" },
+  { label: "Strategy",     href: "/strategy",   icon: Cpu,             description: "EMA + RSI config" },
+  { label: "Signals",      href: "/signals",    icon: Activity,        description: "Live signals & decisions" },
+  { label: "Backtest",     href: "/backtest",   icon: BarChart2,       description: "Historical testing" },
+  { label: "Risk",         href: "/risk",       icon: Shield,          description: "Exposure limits" },
+  { label: "Contabilidad", href: "/accounting", icon: BookOpen,        description: "Balance & P&L" },
 ];
 
 export function Sidebar() {

@@ -1,12 +1,13 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { QuotesResponse } from "@/types";
 import { useAuthStore } from "@/store/authStore";
+import { useBotTabsStore } from "@/store/botTabsStore";
 import { cn } from "@/lib/utils";
-import { Radio } from "lucide-react";
+import { Radio, Bot, X } from "lucide-react";
 
 const pageTitles: Record<string, { title: string; subtitle: string }> = {
   "/dashboard": { title: "Dashboard",        subtitle: "Portfolio overview" },
@@ -15,6 +16,7 @@ const pageTitles: Record<string, { title: string; subtitle: string }> = {
   "/strategy":  { title: "Strategy",         subtitle: "EMA crossover + RSI" },
   "/backtest":  { title: "Backtesting",      subtitle: "Historical strategy simulation" },
   "/risk":      { title: "Risk Management",  subtitle: "Exposure & circuit breaker" },
+  "/bots":      { title: "Bots",             subtitle: "Seleccionar estrategia" },
 };
 
 function QuoteTicker({ symbol, price, changePct }: { symbol: string; price: number; changePct: number }) {
@@ -39,8 +41,10 @@ function QuoteTicker({ symbol, price, changePct }: { symbol: string; price: numb
 }
 
 export function Topbar() {
-  const pathname = usePathname();
-  const user = useAuthStore((s) => s.user);
+  const pathname  = usePathname();
+  const router    = useRouter();
+  const user      = useAuthStore((s) => s.user);
+  const { tabs, removeTab } = useBotTabsStore();
 
   const meta =
     Object.entries(pageTitles).find(([path]) => pathname.startsWith(path))?.[1] ||
@@ -59,16 +63,79 @@ export function Topbar() {
   const quotes = data?.quotes ?? [];
 
   return (
-    <header className="h-14 bg-[#060D18]/95 backdrop-blur-xl border-b border-white/[0.06] flex items-center justify-between px-6 sticky top-0 z-20">
-      {/* Page title */}
-      <div className="flex items-baseline gap-2">
-        <h2 className="text-sm font-semibold text-slate-200">{meta.title}</h2>
-        {meta.subtitle && (
-          <span className="text-xs text-slate-600 hidden sm:block">{meta.subtitle}</span>
+    <header className="h-14 bg-[#060D18]/95 backdrop-blur-xl border-b border-white/[0.06] flex items-center justify-between px-6 sticky top-0 z-20 gap-3">
+
+      {/* Left: title + bot tabs */}
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        {/* Page title */}
+        <div className="flex items-baseline gap-2 shrink-0">
+          <h2 className="text-sm font-semibold text-slate-200">{meta.title}</h2>
+          {meta.subtitle && (
+            <span className="text-xs text-slate-600 hidden sm:block">{meta.subtitle}</span>
+          )}
+        </div>
+
+        {/* Divider — only when tabs exist */}
+        {tabs.length > 0 && (
+          <span className="w-px h-4 bg-white/[0.08] shrink-0" />
+        )}
+
+        {/* Bot tabs — scrollable */}
+        {tabs.length > 0 && (
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide min-w-0">
+            {tabs.map((tab) => (
+              <div
+                key={tab.id}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-md border shrink-0 group"
+                style={{
+                  background: `${tab.color}12`,
+                  borderColor: `${tab.color}30`,
+                }}
+              >
+                {/* Status dot */}
+                <span
+                  className="w-1.5 h-1.5 rounded-full animate-pulse shrink-0"
+                  style={{ background: tab.color }}
+                />
+                {/* Bot name */}
+                <span
+                  className="text-[11px] font-semibold tracking-tight whitespace-nowrap"
+                  style={{ color: tab.color }}
+                >
+                  {tab.name}
+                </span>
+                {/* Close button */}
+                <button
+                  onClick={() => removeTab(tab.id)}
+                  className="ml-0.5 rounded-full p-0.5 opacity-40 hover:opacity-100 transition-opacity"
+                  style={{ color: tab.color }}
+                  title={`Cerrar pestaña ${tab.name}`}
+                >
+                  <X className="w-2.5 h-2.5" />
+                </button>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 
-      <div className="flex items-center gap-3">
+      {/* Right: bots button + quotes + live + avatar */}
+      <div className="flex items-center gap-3 shrink-0">
+
+        {/* Bots CTA button */}
+        <button
+          onClick={() => router.push("/bots")}
+          className={cn(
+            "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-150 border",
+            pathname.startsWith("/bots")
+              ? "bg-blue-600/15 border-blue-500/30 text-blue-400"
+              : "bg-white/[0.03] border-white/[0.06] text-slate-400 hover:text-slate-200 hover:bg-white/[0.06]"
+          )}
+        >
+          <Bot className="w-3.5 h-3.5" />
+          <span className="hidden sm:block">Bots</span>
+        </button>
+
         {/* Live quotes */}
         <div className="hidden md:flex items-center gap-2">
           {quotes.map((q) => (

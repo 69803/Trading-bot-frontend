@@ -43,7 +43,9 @@ import {
   Clock,
   ArrowUpRight,
   ArrowDownRight,
+  LayoutGrid,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 function DepositModal({
   onClose,
@@ -152,6 +154,7 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
 
 export default function DashboardPage() {
   const qc = useQueryClient();
+  const router = useRouter();
   const [showReset, setShowReset] = useState(false);
   const [showDeposit, setShowDeposit] = useState(false);
 
@@ -265,6 +268,10 @@ export default function DashboardPage() {
           <Button variant="outline" size="sm" onClick={() => setShowReset(true)}>
             <RotateCcw className="w-3.5 h-3.5" />
             Reset
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => router.push("/bots")}>
+            <LayoutGrid className="w-3.5 h-3.5" />
+            Bots
           </Button>
         </div>
       </div>

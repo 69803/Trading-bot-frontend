@@ -3,17 +3,26 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import api from "@/lib/api";
+import { useBotTabsStore } from "@/store/botTabsStore";
 
 export default function MeanReversionPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState<string | null>(null);
+  const { addTab, hasTab } = useBotTabsStore();
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState<string | null>(null);
+  const [dupError, setDupError] = useState<string | null>(null);
 
   const handleIniciar = async () => {
+    if (hasTab("scalperx")) {
+      setDupError("Ya el Bot ScalerX está operando en este momento");
+      setTimeout(() => setDupError(null), 4000);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
       await api.post("/bot/activate/scalperx");
+      addTab("scalperx");
       router.push("/dashboard");
     } catch (e: any) {
       setError(e?.response?.data?.detail ?? "Error al activar el bot");
@@ -117,5 +126,24 @@ export default function MeanReversionPage() {
         )}
       </div>
     </div>
+
+    {dupError && (
+      <div style={{
+        position: "fixed", top: 24, left: "50%", transform: "translateX(-50%)",
+        zIndex: 100, display: "flex", alignItems: "center", gap: 10,
+        background: "rgba(15,23,42,0.95)", border: "1px solid rgba(251,146,60,0.4)",
+        borderRadius: 12, padding: "14px 20px",
+        boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+        backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
+        maxWidth: 380,
+      }}>
+        <span style={{ fontSize: 18 }}>⚠️</span>
+        <p style={{ color: "#fdba74", fontSize: 13, fontWeight: 600, margin: 0 }}>{dupError}</p>
+        <button onClick={() => setDupError(null)} style={{
+          background: "transparent", border: "none", color: "rgba(253,186,116,0.5)",
+          cursor: "pointer", fontSize: 16, padding: "0 0 0 6px", lineHeight: 1,
+        }}>×</button>
+      </div>
+    )}
   );
 }
