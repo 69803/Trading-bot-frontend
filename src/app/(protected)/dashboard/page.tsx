@@ -45,10 +45,8 @@ import {
 } from "lucide-react";
 import Lottie from "lottie-react";
 import aiRobotAnimation from "@/data/ai-robot.json";
-import pcguyAnimation from "@/data/pcguy.json";
 import { useRouter } from "next/navigation";
 import { useBotTabsStore } from "@/store/botTabsStore";
-import { ManualTradingModal } from "@/components/dashboard/ManualTradingModal";
 
 function DepositModal({
   onClose,
@@ -161,7 +159,6 @@ export default function DashboardPage() {
   const { selectedBotId } = useBotTabsStore();
   const [showReset, setShowReset] = useState(false);
   const [showDeposit, setShowDeposit] = useState(false);
-  const [showManualTrading, setShowManualTrading] = useState(false);
 
   const { data: summary, isLoading: summaryLoading } = useQuery<PortfolioSummary>({
     queryKey: ["portfolio-summary"],
@@ -389,17 +386,56 @@ export default function DashboardPage() {
         {/* Manual Trading CTA */}
         <Card className="xl:col-span-1 overflow-hidden relative flex flex-col items-center justify-center py-8 gap-0">
           {/* ambient glow */}
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/[0.05] via-transparent to-teal-700/[0.04] pointer-events-none" />
-          <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-emerald-600/[0.06] rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/[0.05] via-transparent to-cyan-700/[0.04] pointer-events-none rounded-xl" />
+          <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-blue-600/[0.07] rounded-full blur-3xl pointer-events-none" />
 
-          {/* Lottie — PC guy trader */}
-          <div className="relative w-40 h-40 select-none">
-            <Lottie animationData={pcguyAnimation} loop autoplay style={{ width: "100%", height: "100%" }} />
+          {/* SVG chart illustration */}
+          <div className="relative w-36 h-28 select-none mb-2">
+            <svg viewBox="0 0 144 112" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+              {/* Grid */}
+              {[20, 40, 60, 80, 100].map(y => (
+                <line key={y} x1="8" y1={y} x2="136" y2={y} stroke="rgba(255,255,255,0.04)" strokeWidth="1"/>
+              ))}
+              {/* Area under line */}
+              <path d="M8 90 L28 70 L48 78 L68 48 L88 56 L108 30 L128 38 L136 24 L136 100 L8 100Z"
+                fill="url(#mtGrad)" />
+              {/* Main trend line */}
+              <path d="M8 90 L28 70 L48 78 L68 48 L88 56 L108 30 L128 38 L136 24"
+                stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+              {/* Candlesticks */}
+              {[
+                {x:20, o:82, c:66, h:60, l:88},
+                {x:40, o:70, c:80, h:64, l:84},
+                {x:60, o:56, c:44, h:38, l:60},
+                {x:80, o:52, c:60, h:46, l:64},
+                {x:100, o:40, c:28, h:22, l:44},
+                {x:120, o:34, c:42, h:28, l:48},
+              ].map(({x,o,c,h,l})=>{
+                const green = c < o;
+                const col = green ? "#22d3ee" : "#f43f5e";
+                const top = Math.min(o,c), bot = Math.max(o,c);
+                return (
+                  <g key={x}>
+                    <line x1={x} y1={h} x2={x} y2={l} stroke={col} strokeWidth="1" opacity="0.5"/>
+                    <rect x={x-4} y={top} width={8} height={Math.max(bot-top,2)} fill={col} opacity="0.75" rx="1"/>
+                  </g>
+                );
+              })}
+              {/* Dot on last point */}
+              <circle cx="136" cy="24" r="4" fill="#3b82f6" opacity="0.9"/>
+              <circle cx="136" cy="24" r="7" stroke="#3b82f6" strokeWidth="1.5" opacity="0.3"/>
+              <defs>
+                <linearGradient id="mtGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.18"/>
+                  <stop offset="100%" stopColor="#3b82f6" stopOpacity="0"/>
+                </linearGradient>
+              </defs>
+            </svg>
           </div>
 
           {/* Copy */}
-          <div className="relative text-center px-5 mt-1 space-y-2">
-            <p className="text-[14px] font-semibold text-slate-100 leading-snug tracking-tight">
+          <div className="relative text-center px-5 space-y-1.5">
+            <p className="text-[15px] font-semibold text-slate-100 leading-snug tracking-tight">
               Manual Trading
             </p>
             <p className="text-xs text-slate-500 font-medium leading-relaxed">
@@ -409,7 +445,7 @@ export default function DashboardPage() {
 
           {/* Button */}
           <button
-            onClick={() => setShowManualTrading(true)}
+            onClick={(e) => { e.stopPropagation(); router.push("/manual-trading"); }}
             className="relative mt-5 flex items-center gap-2 px-7 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-sm font-bold shadow-xl shadow-blue-600/25 transition-all duration-150 ring-1 ring-blue-500/35"
           >
             <TrendingUp className="w-3.5 h-3.5" />
@@ -482,9 +518,6 @@ export default function DashboardPage() {
         />
       )}
 
-      {showManualTrading && (
-        <ManualTradingModal onClose={() => setShowManualTrading(false)} />
-      )}
     </div>
   );
 }
