@@ -25,10 +25,11 @@ export function Topbar() {
   const user      = useAuthStore((s) => s.user);
   const { tabs, removeTab, selectedBotId, setSelectedBot } = useBotTabsStore();
 
-  // Same queryKey as Dashboard → React Query serves from cache, zero extra requests
+  // Only fetch bot status when a bot is selected — avoids 422 (bot_id is required)
   const { data: botStatus } = useQuery<{ is_running: boolean }>({
-    queryKey: ["bot-status"],
-    queryFn: async () => (await api.get("/bot/status")).data,
+    queryKey: ["bot-status", selectedBotId],
+    queryFn: async () => (await api.get(`/bot/status?bot_id=${selectedBotId}`)).data,
+    enabled: !!selectedBotId,
     refetchInterval: 10000,
     staleTime: 5000,
   });
