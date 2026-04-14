@@ -9,8 +9,10 @@ import { cn } from "@/lib/utils";
 import { Radio, X } from "lucide-react";
 
 const pageTitles: Record<string, { title: string; subtitle: string }> = {
-  "/dashboard": { title: "Dashboard",        subtitle: "Portfolio overview" },
-  "/trade":     { title: "Trade",            subtitle: "Place market & limit orders" },
+  "/dashboard":       { title: "Dashboard",        subtitle: "Portfolio overview" },
+  "/manual-trading":  { title: "Manual Trading",   subtitle: "Aviso antes de operar" },
+  "/trading":         { title: "Manual Trading",   subtitle: "Solo tus operaciones manuales" },
+  "/trade":           { title: "Trade",            subtitle: "Place market & limit orders" },
   "/orders":    { title: "Orders",           subtitle: "Order management" },
   "/strategy":  { title: "Strategy",         subtitle: "EMA crossover + RSI" },
   "/backtest":  { title: "Backtesting",      subtitle: "Historical strategy simulation" },

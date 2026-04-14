@@ -118,7 +118,7 @@ export default function ManualTradingPage() {
 
           {/* CTA */}
           <button
-            onClick={() => router.push("/trade")}
+            onClick={() => router.push("/trading")}
             className="group w-full flex items-center justify-center gap-2.5 py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-base font-bold shadow-2xl shadow-blue-600/30 transition-all duration-150 ring-1 ring-blue-500/40 mt-2"
           >
             Iniciar Trading

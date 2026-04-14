@@ -22,6 +22,7 @@ const navItems = [
   { label: "Dashboard",    href: "/dashboard",  icon: LayoutDashboard, description: "Overview & P&L" },
   { label: "Bots",         href: "/bots",       icon: Bot,             description: "Seleccionar bot" },
   { label: "Trade",        href: "/trade",      icon: TrendingUp,      description: "Place orders" },
+  { label: "Manual",       href: "/trading",    icon: TrendingUp,      description: "Manual trading" },
   { label: "Orders",       href: "/orders",     icon: ClipboardList,   description: "Order history" },
   { label: "Strategy",     href: "/strategy",   icon: Cpu,             description: "EMA + RSI config" },
   { label: "Signals",      href: "/signals",    icon: Activity,        description: "Live signals & decisions" },
