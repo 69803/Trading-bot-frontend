@@ -44,7 +44,10 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   LayoutGrid,
+  Sparkles,
 } from "lucide-react";
+import Lottie from "lottie-react";
+import aiRobotAnimation from "@/data/ai-robot.json";
 import { useRouter } from "next/navigation";
 import { useBotTabsStore } from "@/store/botTabsStore";
 
@@ -352,55 +355,39 @@ export default function DashboardPage() {
 
       {/* Chart + Positions */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-        {/* Portfolio Chart */}
-        <Card
-          title="Portfolio Value"
-          subtitle="Last 90 snapshots"
-          className="xl:col-span-2"
-        >
-          {chartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={260}>
-              <AreaChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="portfolioGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3B82F6" stopOpacity={0.25} />
-                    <stop offset="100%" stopColor="#3B82F6" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                <XAxis
-                  dataKey="date"
-                  tick={{ fill: "#475569", fontSize: 10 }}
-                  axisLine={false}
-                  tickLine={false}
-                  interval="preserveStartEnd"
-                />
-                <YAxis
-                  tick={{ fill: "#475569", fontSize: 10 }}
-                  axisLine={false}
-                  tickLine={false}
-                  tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
-                  width={48}
-                />
-                <Tooltip content={<ChartTooltip />} />
-                <Area
-                  type="monotone"
-                  dataKey="value"
-                  stroke="#3B82F6"
-                  strokeWidth={2}
-                  fill="url(#portfolioGrad)"
-                  dot={false}
-                  activeDot={{ r: 4, fill: "#3B82F6", stroke: "#112035", strokeWidth: 2 }}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          ) : (
-            <EmptyState
-              icon={TrendingUp}
-              title="No portfolio history yet"
-              description="Snapshots are captured every 5 minutes once you start trading"
+        {/* AI Robot CTA */}
+        <Card className="xl:col-span-2 flex flex-col items-center justify-center py-6 overflow-hidden relative">
+          {/* Glow background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/[0.06] via-transparent to-indigo-600/[0.04] pointer-events-none rounded-xl" />
+
+          {/* Lottie animation */}
+          <div className="w-52 h-52 select-none">
+            <Lottie
+              animationData={aiRobotAnimation}
+              loop
+              autoplay
+              style={{ width: "100%", height: "100%" }}
             />
-          )}
+          </div>
+
+          {/* Copy */}
+          <div className="text-center mt-2 px-6 space-y-1.5">
+            <p className="text-base font-semibold text-slate-100 leading-snug">
+              ¿Quieres que hagamos tus trades por ti?
+            </p>
+            <p className="text-sm text-slate-500">
+              Selecciona el mejor bot para ti
+            </p>
+          </div>
+
+          {/* CTA Button */}
+          <button
+            onClick={() => router.push("/bots")}
+            className="mt-5 flex items-center gap-2 px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-sm font-semibold shadow-lg shadow-blue-600/30 transition-all duration-150 ring-1 ring-blue-500/40"
+          >
+            <Sparkles className="w-4 h-4" />
+            BOTS
+          </button>
         </Card>
 
         {/* Open Positions */}
