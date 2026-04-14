@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import Lottie from "lottie-react";
+import pcguyAnimation from "@/data/pcguy.json";
 import api from "@/lib/api";
 import type { QuotesResponse, BalanceResponse } from "@/types";
 import { SYMBOLS } from "@/config/constants";

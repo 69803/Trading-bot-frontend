@@ -45,6 +45,7 @@ import {
 } from "lucide-react";
 import Lottie from "lottie-react";
 import aiRobotAnimation from "@/data/ai-robot.json";
+import pcguyAnimation from "@/data/pcguy.json";
 import { useRouter } from "next/navigation";
 import { useBotTabsStore } from "@/store/botTabsStore";
 import { ManualTradingModal } from "@/components/dashboard/ManualTradingModal";
@@ -391,54 +392,9 @@ export default function DashboardPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/[0.05] via-transparent to-teal-700/[0.04] pointer-events-none" />
           <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-emerald-600/[0.06] rounded-full blur-3xl pointer-events-none" />
 
-          {/* Inline SVG illustration — trading chart */}
-          <div className="relative w-32 h-32 flex items-center justify-center select-none">
-            <svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-              {/* Grid lines */}
-              {[24, 44, 64, 84, 104].map((y) => (
-                <line key={y} x1="12" y1={y} x2="116" y2={y} stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
-              ))}
-              {/* Area fill */}
-              <path
-                d="M12 96 L28 72 L44 80 L60 52 L76 60 L92 36 L108 44 L116 28 L116 104 L12 104 Z"
-                fill="url(#chartGrad)"
-              />
-              {/* Line */}
-              <path
-                d="M12 96 L28 72 L44 80 L60 52 L76 60 L92 36 L108 44 L116 28"
-                stroke="#10b981"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                fill="none"
-              />
-              {/* Candlesticks */}
-              {[
-                { x: 22, o: 88, c: 68, h: 62, l: 92 },
-                { x: 38, o: 76, c: 82, h: 70, l: 88 },
-                { x: 54, o: 60, c: 48, h: 44, l: 64 },
-                { x: 70, o: 56, c: 64, h: 52, l: 68 },
-                { x: 86, o: 44, c: 32, h: 28, l: 48 },
-                { x: 102, o: 40, c: 48, h: 36, l: 54 },
-              ].map(({ x, o, c, h, l }) => {
-                const isGreen = c < o;
-                const color = isGreen ? "#10b981" : "#f43f5e";
-                const top = Math.min(o, c);
-                const bot = Math.max(o, c);
-                return (
-                  <g key={x}>
-                    <line x1={x} y1={h} x2={x} y2={l} stroke={color} strokeWidth="1" opacity="0.6" />
-                    <rect x={x - 3} y={top} width={6} height={Math.max(bot - top, 1)} fill={color} opacity="0.8" rx="0.5" />
-                  </g>
-                );
-              })}
-              <defs>
-                <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10b981" stopOpacity="0.18" />
-                  <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-            </svg>
+          {/* Lottie — PC guy trader */}
+          <div className="relative w-40 h-40 select-none">
+            <Lottie animationData={pcguyAnimation} loop autoplay style={{ width: "100%", height: "100%" }} />
           </div>
 
           {/* Copy */}
