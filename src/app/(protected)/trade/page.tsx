@@ -252,9 +252,9 @@ export default function TradePage() {
   });
 
   const positions = allPositions ?? [];
-  // Manual trading page: only show positions with no bot_id (opened by the user, not by any bot)
-  const openPositions   = positions.filter((p) =>  p.is_open && !p.bot_id);
-  const closedPositions = positions.filter((p) => !p.is_open && !p.bot_id);
+  // Bot trading page: only show positions opened by bots (bot_id is set)
+  const openPositions   = positions.filter((p) =>  p.is_open && !!p.bot_id);
+  const closedPositions = positions.filter((p) => !p.is_open && !!p.bot_id);
 
   // Extra quotes for any open-position symbols not already pinned
   const openSymbols = openPositions.map((p) => p.symbol);
