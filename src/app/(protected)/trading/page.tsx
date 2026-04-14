@@ -454,8 +454,23 @@ export default function ManualTradingPanelPage() {
       setTimeout(() => setFormSuccess(null), 3000);
     },
     onError: (err: unknown) => {
-      const e = err as { response?: { data?: { detail?: string } } };
-      setFormError(e.response?.data?.detail ?? "Failed to place order");
+      const e = err as { response?: { status?: number; data?: { detail?: unknown } }; message?: string };
+      const detail = e.response?.data?.detail;
+      let msg: string;
+      if (typeof detail === "string" && detail) {
+        msg = detail;
+      } else if (Array.isArray(detail) && detail.length > 0) {
+        // FastAPI 422 validation errors come as an array
+        const first = detail[0] as { msg?: string };
+        msg = first?.msg ?? "Validation error";
+      } else if (e.response?.status) {
+        msg = `Server error ${e.response.status} — try again`;
+      } else if (e.message) {
+        msg = e.message;
+      } else {
+        msg = "Failed to place order — check connection";
+      }
+      setFormError(msg);
       setFormSuccess(null);
     },
   });
