@@ -45,6 +45,8 @@ export interface Position {
   realized_pnl: number;
   unrealized_pnl: number;
   pnl_percentage: number;
+  /** null = manual trade, string = bot id that opened this position */
+  bot_id: string | null;
 }
 
 // Matches backend PortfolioOut schema
@@ -99,6 +101,8 @@ export interface Trade {
   commission: number;
   realized_pnl: number | null;
   executed_at: string;
+  /** null = manual trade, string = bot id that executed this trade */
+  bot_id: string | null;
 }
 
 export interface TradesResponse {

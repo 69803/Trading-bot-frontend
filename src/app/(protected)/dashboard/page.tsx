@@ -39,10 +39,7 @@ import {
   Bot,
   Square,
   Plus,
-  Briefcase,
   Clock,
-  ArrowUpRight,
-  ArrowDownRight,
   LayoutGrid,
   Sparkles,
 } from "lucide-react";
@@ -50,6 +47,7 @@ import Lottie from "lottie-react";
 import aiRobotAnimation from "@/data/ai-robot.json";
 import { useRouter } from "next/navigation";
 import { useBotTabsStore } from "@/store/botTabsStore";
+import { ManualTradingModal } from "@/components/dashboard/ManualTradingModal";
 
 function DepositModal({
   onClose,
@@ -162,6 +160,7 @@ export default function DashboardPage() {
   const { selectedBotId } = useBotTabsStore();
   const [showReset, setShowReset] = useState(false);
   const [showDeposit, setShowDeposit] = useState(false);
+  const [showManualTrading, setShowManualTrading] = useState(false);
 
   const { data: summary, isLoading: summaryLoading } = useQuery<PortfolioSummary>({
     queryKey: ["portfolio-summary"],
@@ -355,93 +354,111 @@ export default function DashboardPage() {
 
       {/* Chart + Positions */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-        {/* AI Robot CTA */}
-        <Card className="xl:col-span-2 flex flex-col items-center justify-center py-6 overflow-hidden relative">
-          {/* Glow background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/[0.06] via-transparent to-indigo-600/[0.04] pointer-events-none rounded-xl" />
+        {/* AI Robot — Bots CTA */}
+        <Card className="xl:col-span-2 overflow-hidden relative flex flex-col items-center justify-center py-8 gap-0">
+          {/* ambient glow */}
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/[0.07] via-transparent to-indigo-700/[0.05] pointer-events-none" />
+          <div className="absolute -top-16 -right-16 w-48 h-48 bg-blue-600/[0.06] rounded-full blur-3xl pointer-events-none" />
 
-          {/* Lottie animation */}
-          <div className="w-52 h-52 select-none">
-            <Lottie
-              animationData={aiRobotAnimation}
-              loop
-              autoplay
-              style={{ width: "100%", height: "100%" }}
-            />
+          {/* Lottie */}
+          <div className="relative w-44 h-44 select-none">
+            <Lottie animationData={aiRobotAnimation} loop autoplay style={{ width: "100%", height: "100%" }} />
           </div>
 
           {/* Copy */}
-          <div className="text-center mt-2 px-6 space-y-1.5">
-            <p className="text-base font-semibold text-slate-100 leading-snug">
+          <div className="relative text-center px-8 mt-1 space-y-2">
+            <p className="text-[15px] font-semibold text-slate-100 leading-snug tracking-tight">
               ¿Quieres que hagamos tus trades por ti?
             </p>
-            <p className="text-sm text-slate-500">
+            <p className="text-xs text-slate-500 font-medium">
               Selecciona el mejor bot para ti
             </p>
           </div>
 
-          {/* CTA Button */}
+          {/* Button */}
           <button
             onClick={() => router.push("/bots")}
-            className="mt-5 flex items-center gap-2 px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-sm font-semibold shadow-lg shadow-blue-600/30 transition-all duration-150 ring-1 ring-blue-500/40"
+            className="relative mt-6 flex items-center gap-2 px-7 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-sm font-bold shadow-xl shadow-blue-600/25 transition-all duration-150 ring-1 ring-blue-500/35"
           >
-            <Sparkles className="w-4 h-4" />
+            <Sparkles className="w-3.5 h-3.5" />
             BOTS
           </button>
         </Card>
 
-        {/* Open Positions */}
-        <Card
-          title="Open Positions"
-          subtitle={`${positions.length} active`}
-          className="xl:col-span-1"
-        >
-          {positions.length === 0 ? (
-            <EmptyState
-              icon={Briefcase}
-              title="No open positions"
-              description="Start the bot or place a manual order to open a position"
-            />
-          ) : (
-            <div className="space-y-2 max-h-72 overflow-y-auto">
-              {positions.map((pos) => {
-                const unrealized =
-                  pos.current_price != null
-                    ? (pos.current_price - pos.avg_entry_price) * pos.quantity * (pos.side === "long" ? 1 : -1)
-                    : 0;
-                const isProfit = unrealized >= 0;
+        {/* Manual Trading CTA */}
+        <Card className="xl:col-span-1 overflow-hidden relative flex flex-col items-center justify-center py-8 gap-0">
+          {/* ambient glow */}
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/[0.05] via-transparent to-teal-700/[0.04] pointer-events-none" />
+          <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-emerald-600/[0.06] rounded-full blur-3xl pointer-events-none" />
+
+          {/* Inline SVG illustration — trading chart */}
+          <div className="relative w-32 h-32 flex items-center justify-center select-none">
+            <svg viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+              {/* Grid lines */}
+              {[24, 44, 64, 84, 104].map((y) => (
+                <line key={y} x1="12" y1={y} x2="116" y2={y} stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
+              ))}
+              {/* Area fill */}
+              <path
+                d="M12 96 L28 72 L44 80 L60 52 L76 60 L92 36 L108 44 L116 28 L116 104 L12 104 Z"
+                fill="url(#chartGrad)"
+              />
+              {/* Line */}
+              <path
+                d="M12 96 L28 72 L44 80 L60 52 L76 60 L92 36 L108 44 L116 28"
+                stroke="#10b981"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+              />
+              {/* Candlesticks */}
+              {[
+                { x: 22, o: 88, c: 68, h: 62, l: 92 },
+                { x: 38, o: 76, c: 82, h: 70, l: 88 },
+                { x: 54, o: 60, c: 48, h: 44, l: 64 },
+                { x: 70, o: 56, c: 64, h: 52, l: 68 },
+                { x: 86, o: 44, c: 32, h: 28, l: 48 },
+                { x: 102, o: 40, c: 48, h: 36, l: 54 },
+              ].map(({ x, o, c, h, l }) => {
+                const isGreen = c < o;
+                const color = isGreen ? "#10b981" : "#f43f5e";
+                const top = Math.min(o, c);
+                const bot = Math.max(o, c);
                 return (
-                  <div
-                    key={pos.id}
-                    className="flex items-start justify-between p-3 bg-white/[0.02] rounded-lg border border-white/[0.05] hover:border-white/[0.08] transition-colors"
-                  >
-                    <div>
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-sm font-semibold text-slate-200">{pos.symbol}</span>
-                        <Badge variant={pos.side === "long" ? "long" : "short"} dot>
-                          {pos.side}
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-slate-600">
-                        {pos.quantity} @ {formatCurrency(pos.avg_entry_price)}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className={`text-sm font-semibold tabular-nums ${isProfit ? "text-emerald-400" : "text-red-400"}`}>
-                        {isProfit ? <ArrowUpRight className="w-3.5 h-3.5 inline" /> : <ArrowDownRight className="w-3.5 h-3.5 inline" />}
-                        {formatCurrency(Math.abs(unrealized))}
-                      </p>
-                      {pos.current_price && (
-                        <p className="text-xs text-slate-600 tabular-nums mt-0.5">
-                          {formatCurrency(pos.current_price)}
-                        </p>
-                      )}
-                    </div>
-                  </div>
+                  <g key={x}>
+                    <line x1={x} y1={h} x2={x} y2={l} stroke={color} strokeWidth="1" opacity="0.6" />
+                    <rect x={x - 3} y={top} width={6} height={Math.max(bot - top, 1)} fill={color} opacity="0.8" rx="0.5" />
+                  </g>
                 );
               })}
-            </div>
-          )}
+              <defs>
+                <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#10b981" stopOpacity="0.18" />
+                  <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+
+          {/* Copy */}
+          <div className="relative text-center px-5 mt-1 space-y-2">
+            <p className="text-[14px] font-semibold text-slate-100 leading-snug tracking-tight">
+              Manual Trading
+            </p>
+            <p className="text-xs text-slate-500 font-medium leading-relaxed">
+              Empieza a hacer trading y aumenta tu capital
+            </p>
+          </div>
+
+          {/* Button */}
+          <button
+            onClick={() => setShowManualTrading(true)}
+            className="relative mt-5 flex items-center gap-2 px-7 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-sm font-bold shadow-xl shadow-blue-600/25 transition-all duration-150 ring-1 ring-blue-500/35"
+          >
+            <TrendingUp className="w-3.5 h-3.5" />
+            TRADING
+          </button>
         </Card>
       </div>
 
@@ -507,6 +524,10 @@ export default function DashboardPage() {
           onConfirm={(capital) => resetMutation.mutate(capital)}
           loading={resetMutation.isPending}
         />
+      )}
+
+      {showManualTrading && (
+        <ManualTradingModal onClose={() => setShowManualTrading(false)} />
       )}
     </div>
   );

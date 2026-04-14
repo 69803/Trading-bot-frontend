@@ -252,8 +252,9 @@ export default function TradePage() {
   });
 
   const positions = allPositions ?? [];
-  const openPositions  = positions.filter((p) => p.is_open  && (!selectedBotId || symbolBelongsToBot(p.symbol, selectedBotId)));
-  const closedPositions = positions.filter((p) => !p.is_open && (!selectedBotId || symbolBelongsToBot(p.symbol, selectedBotId)));
+  // Manual trading page: only show positions with no bot_id (opened by the user, not by any bot)
+  const openPositions   = positions.filter((p) =>  p.is_open && !p.bot_id);
+  const closedPositions = positions.filter((p) => !p.is_open && !p.bot_id);
 
   // Extra quotes for any open-position symbols not already pinned
   const openSymbols = openPositions.map((p) => p.symbol);
@@ -489,29 +490,14 @@ export default function TradePage() {
   return (
     <div className="flex flex-col gap-4 h-full">
 
-      {/* ── Bot filter banner ───────────────────────────────────────────────── */}
-      {selectedBotId && (() => {
-        const meta = BOT_META[selectedBotId];
-        return (
-          <div
-            className="flex items-center gap-2.5 px-4 py-2 rounded-xl border text-xs font-semibold"
-            style={{
-              background: `${meta.color}12`,
-              borderColor: `${meta.color}35`,
-              color: meta.color,
-            }}
-          >
-            <span
-              className="w-2 h-2 rounded-full animate-pulse shrink-0"
-              style={{ background: meta.color }}
-            />
-            Mostrando posiciones de <span className="font-bold">{meta.name}</span>
-            <span className="ml-auto opacity-60 font-normal">
-              Solo símboles de este bot
-            </span>
-          </div>
-        );
-      })()}
+      {/* ── Manual trading badge ───────────────────────────────────────────── */}
+      <div className="flex items-center gap-2 px-4 py-2 rounded-xl border border-blue-500/20 bg-blue-500/[0.05] text-xs font-semibold text-blue-400">
+        <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />
+        Manual Trading
+        <span className="ml-auto font-normal text-blue-400/60">
+          Solo posiciones manuales — operaciones de bots no se muestran aquí
+        </span>
+      </div>
 
       {/* ── Balance bar ────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-4 py-2.5 bg-[#0d1117] border border-[#1e2329] rounded-xl">
