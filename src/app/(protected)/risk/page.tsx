@@ -81,7 +81,10 @@ export default function RiskPage() {
   });
 
   useEffect(() => {
-    if (riskSettings) setSettings(riskSettings);
+    // Only populate on first load — never overwrite changes the user has already made
+    if (riskSettings && Object.keys(settings).length === 0) {
+      setSettings(riskSettings);
+    }
   }, [riskSettings]);
 
   const saveMutation = useMutation({
