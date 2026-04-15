@@ -492,19 +492,23 @@ export default function TradePage() {
       return res.data as import("@/types").Order;
     },
     onSuccess: (order) => {
-      // Backend returns HTTP 201 even for rejected orders — check status explicitly
+      // Backend returns HTTP 201 even for rejected/pending orders — check explicitly
       if (order.status === "rejected") {
         setFormError(order.rejection_reason ?? "Order rejected by risk controls");
         setFormSuccess(null);
         return;
       }
-      setFormSuccess("Order placed!");
+      if (order.status === "pending") {
+        setFormSuccess("Order queued — will execute at market open");
+      } else {
+        setFormSuccess("Order placed!");
+      }
       setFormError(null);
       qc.invalidateQueries({ queryKey: ["orders-trade"] });
       qc.invalidateQueries({ queryKey: ["positions-all"] });
       qc.invalidateQueries({ queryKey: ["balance"] });
       qc.invalidateQueries({ queryKey: ["portfolio-summary"] });
-      setTimeout(() => setFormSuccess(null), 3000);
+      setTimeout(() => setFormSuccess(null), 4000);
     },
     onError: (err: unknown) => {
       const e = err as { response?: { data?: { detail?: string } } };
