@@ -443,9 +443,16 @@ export default function TradePage() {
       };
       if (orderType === "limit" && limitPrice)
         body.limit_price = Number(limitPrice);
-      return api.post("/orders", body);
+      const res = await api.post("/orders", body);
+      return res.data as import("@/types").Order;
     },
-    onSuccess: () => {
+    onSuccess: (order) => {
+      // Backend returns HTTP 201 even for rejected orders — check status explicitly
+      if (order.status === "rejected") {
+        setFormError(order.rejection_reason ?? "Order rejected by risk controls");
+        setFormSuccess(null);
+        return;
+      }
       setFormSuccess("Order placed!");
       setFormError(null);
       qc.invalidateQueries({ queryKey: ["orders-trade"] });
