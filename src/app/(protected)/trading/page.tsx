@@ -12,17 +12,19 @@ import type {
   Candle,
   Quote,
   BalanceResponse,
+  MarketStatus,
 } from "@/types";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { formatCurrency } from "@/lib/utils";
 import { SYMBOLS, TIMEFRAMES } from "@/config/constants";
-import { ASSET_INFO, getAssetDecimals, isForexPair } from "@/config/assetMeta";
+import { ASSET_INFO, getAssetDecimals, isForexPair, getAssetType } from "@/config/assetMeta";
 import {
   ArrowUpCircle,
   ArrowDownCircle,
   AlertCircle,
+  Clock,
   Plus,
   X,
   Wallet,
@@ -94,6 +96,38 @@ function AnimatedPrice({
           })
         : "—"}
     </span>
+  );
+}
+
+// ─── Market Status Badge ──────────────────────────────────────────────────────
+function MarketStatusBadge({ status }: { status?: MarketStatus }) {
+  if (!status) return null;
+  const isOpen = status.is_open;
+  const label =
+    status.session === "pre-market"  ? "Pre-Market"   :
+    status.session === "after-hours" ? "After-Hours"  :
+    isOpen                           ? "Market Open"  :
+                                       "Market Closed";
+  const isExtended = status.session === "pre-market" || status.session === "after-hours";
+  return (
+    <div className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 border ${
+      isOpen      ? "bg-emerald-500/[0.08] border-emerald-500/20" :
+      isExtended  ? "bg-amber-500/[0.08]   border-amber-500/20"  :
+                    "bg-red-500/[0.08]     border-red-500/20"
+    }`}>
+      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+        isOpen     ? "bg-emerald-400 animate-pulse" :
+        isExtended ? "bg-amber-400"                 :
+                     "bg-red-400"
+      }`} />
+      <span className={`text-[10px] font-semibold tracking-wide uppercase ${
+        isOpen     ? "text-emerald-400/80" :
+        isExtended ? "text-amber-400/80"   :
+                     "text-red-400/80"
+      }`}>
+        {label}
+      </span>
+    </div>
   );
 }
 
@@ -271,6 +305,14 @@ export default function ManualTradingPanelPage() {
   for (const q of tabQuotesData?.quotes ?? []) tabQuotes[q.symbol] = q;
   for (const q of extraQuotesData?.quotes ?? []) tabQuotes[q.symbol] = q;
 
+  // Market status — NYSE session detection, polled every 60s
+  const { data: marketStatus } = useQuery<MarketStatus>({
+    queryKey: ["market-status"],
+    queryFn: async () => (await api.get("/market/status")).data,
+    refetchInterval: 60_000,
+    staleTime: 30_000,
+  });
+
   // Track prev price for the colour-flash animation on quote refresh
   useEffect(() => {
     const q = quoteData?.quotes?.[0];
@@ -430,6 +472,9 @@ export default function ManualTradingPanelPage() {
 
   const cashBalance = balanceData?.cash_balance ?? null;
   const equity = balanceData?.equity ?? null;
+
+  // true for stocks/ETFs → show NYSE market-hours UI; false for forex/commodities/crypto
+  const isEquitySymbol = getAssetType(activeSymbol) === "stock" || getAssetType(activeSymbol) === "etf";
 
   // ── Order mutation ──────────────────────────────────────────────────────────
   const orderMutation = useMutation({
@@ -644,6 +689,7 @@ export default function ManualTradingPanelPage() {
               </span>
             </div>
           )}
+          {isEquitySymbol && <MarketStatusBadge status={marketStatus} />}
           <DataModeBadge />
         </div>
       </div>
@@ -826,6 +872,20 @@ export default function ManualTradingPanelPage() {
                     shares
                   </span>
                 </p>
+              )}
+
+              {/* Market closed warning */}
+              {isEquitySymbol && marketStatus && !marketStatus.is_open && (
+                <div className="flex items-center gap-2 p-2.5 bg-amber-500/[0.07] border border-amber-500/20 rounded-lg">
+                  <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  <span className="text-xs text-amber-400/90">
+                    {marketStatus.session === "pre-market"
+                      ? "Pre-market · executes at regular session open (9:30 AM ET)"
+                      : marketStatus.session === "after-hours"
+                      ? "After-hours · order executes at next market open"
+                      : "Market closed · order will execute at next market open"}
+                  </span>
+                </div>
               )}
 
               {formError && (
@@ -1040,6 +1100,14 @@ export default function ManualTradingPanelPage() {
               <span className="text-[#848e9c] text-xs">Invested: <span className="text-white font-semibold font-mono">{formatCurrency(totalInvested)}</span></span>
               <span className="text-[#848e9c] text-xs">Value: <span className="text-white font-semibold font-mono">{formatCurrency(totalInvested + totalPnl)}</span></span>
               <span className="text-[#848e9c] text-xs">Total PnL: <span className={`font-bold font-mono ${totalIsPos ? "text-[#0ecb81]" : "text-[#f6465d]"}`}>{totalIsPos ? "+" : ""}{formatCurrency(totalPnl)}</span></span>
+              {marketStatus && !marketStatus.is_open && openPositions.some(
+                (p) => getAssetType(p.symbol) === "stock" || getAssetType(p.symbol) === "etf"
+              ) && (
+                <span className="ml-auto flex items-center gap-1 text-[10px] text-amber-400/60 whitespace-nowrap">
+                  <Clock className="w-3 h-3 shrink-0" />
+                  {marketStatus.session === "after-hours" ? "After-hours price" : "Last close price"}
+                </span>
+              )}
             </div>
           </div>
         );

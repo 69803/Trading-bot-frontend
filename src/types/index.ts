@@ -298,3 +298,17 @@ export interface FullTokenResponse {
   refresh_token: string;
   token_type: string;
 }
+
+export interface MarketStatus {
+  /** true only during regular session */
+  is_open: boolean;
+  /** "regular" | "pre-market" | "after-hours" | "closed" */
+  session: string;
+  /** ISO-8601 UTC — when the next regular session opens */
+  next_open: string | null;
+  /** ISO-8601 UTC — when the current session closes (null if already closed) */
+  next_close: string | null;
+  /** "NYSE" | "FX" | "Crypto" | "Commodities" */
+  market: string;
+  timezone: string;
+}
