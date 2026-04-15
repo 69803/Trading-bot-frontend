@@ -498,7 +498,7 @@ export default function ManualTradingPanelPage() {
         return;
       }
       if (order.status === "pending") {
-        setFormSuccess("Order queued — will execute at market open");
+        setFormSuccess("Mercado cerrado — operación quedará en pendiente");
       } else {
         setFormSuccess("Order placed!");
       }
