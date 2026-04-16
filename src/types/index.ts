@@ -77,6 +77,9 @@ export interface Order {
   created_at: string;
   updated_at: string;
   realized_pnl: number | null;
+  broker_order_id: string | null;
+  alpaca_status: string | null;
+  submitted_at: string | null;
 }
 
 export interface BalanceResponse {

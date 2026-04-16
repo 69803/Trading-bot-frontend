@@ -288,8 +288,13 @@ function TradeStep({ onSuccess }: { onSuccess: () => void }) {
       if (orderType === "limit" && limitPrice) body.limit_price = Number(limitPrice);
       return api.post("/orders", body);
     },
-    onSuccess: () => {
-      setSuccess(`Orden ${side === "buy" ? "BUY" : "SELL"} ejecutada`);
+    onSuccess: (res) => {
+      const order = res.data as import("@/types").Order;
+      if (order.status === "pending" && order.alpaca_status) {
+        setSuccess("Queued in Alpaca — will fill at market open");
+      } else {
+        setSuccess(`Orden ${side === "buy" ? "BUY" : "SELL"} ejecutada`);
+      }
       setError(null);
       qc.invalidateQueries({ queryKey: ["positions-all"] });
       qc.invalidateQueries({ queryKey: ["balance"] });
@@ -299,13 +304,8 @@ function TradeStep({ onSuccess }: { onSuccess: () => void }) {
     onError: (err: unknown) => {
       const e = err as { response?: { data?: { detail?: string } } };
       const detail = e.response?.data?.detail ?? "Error al colocar la orden";
-      if (detail.toLowerCase().startsWith("market is closed")) {
-        setWarning("Market closed — order not submitted");
-        setError(null);
-      } else {
-        setError(detail);
-        setWarning(null);
-      }
+      setError(detail);
+      setWarning(null);
     },
   });
 
