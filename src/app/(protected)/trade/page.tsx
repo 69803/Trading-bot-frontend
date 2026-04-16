@@ -221,6 +221,7 @@ export default function TradePage() {
   const [timeframe, setTimeframe] = useState("1h");
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
+  const [formWarning, setFormWarning] = useState<string | null>(null);
   const [depositLoading, setDepositLoading] = useState(false);
   const [depositOpen, setDepositOpen] = useState(false);
   const [depositAmount, setDepositAmount] = useState("1000");
@@ -512,7 +513,14 @@ export default function TradePage() {
     },
     onError: (err: unknown) => {
       const e = err as { response?: { data?: { detail?: string } } };
-      setFormError(e.response?.data?.detail ?? "Failed to place order");
+      const detail = e.response?.data?.detail ?? "Failed to place order";
+      if (detail.toLowerCase().startsWith("market is closed")) {
+        setFormWarning("Market closed — order not submitted");
+        setFormError(null);
+      } else {
+        setFormError(detail);
+        setFormWarning(null);
+      }
       setFormSuccess(null);
     },
   });
@@ -525,6 +533,7 @@ export default function TradePage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
+    setFormWarning(null);
     if (!investmentAmount || Number(investmentAmount) <= 0) {
       setFormError("Enter a valid investment amount");
       return;
@@ -878,6 +887,11 @@ export default function TradePage() {
                 </div>
               )}
 
+              {formWarning && (
+                <p className="text-xs text-amber-400 bg-amber-500/[0.08] border border-amber-500/20 rounded-lg px-3 py-2">
+                  {formWarning}
+                </p>
+              )}
               {formError && (
                 <p className="text-xs text-red-400 bg-red-500/[0.08] border border-red-500/20 rounded-lg px-3 py-2">
                   {formError}

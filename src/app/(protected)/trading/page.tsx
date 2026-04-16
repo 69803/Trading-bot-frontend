@@ -220,6 +220,7 @@ export default function ManualTradingPanelPage() {
   const [timeframe, setTimeframe] = useState("1h");
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
+  const [formWarning, setFormWarning] = useState<string | null>(null);
   const [depositLoading, setDepositLoading] = useState(false);
   const [depositOpen, setDepositOpen] = useState(false);
   const [depositAmount, setDepositAmount] = useState("1000");
@@ -512,6 +513,13 @@ export default function ManualTradingPanelPage() {
     onError: (err: unknown) => {
       const e = err as { response?: { status?: number; data?: { detail?: unknown } }; message?: string };
       const detail = e.response?.data?.detail;
+      // Market-closed 400 — expected condition, not a crash
+      if (typeof detail === "string" && detail.toLowerCase().startsWith("market is closed")) {
+        setFormWarning("Market closed — order not submitted");
+        setFormError(null);
+        setFormSuccess(null);
+        return;
+      }
       let msg: string;
       if (typeof detail === "string" && detail) {
         msg = detail;
@@ -527,6 +535,7 @@ export default function ManualTradingPanelPage() {
         msg = "Failed to place order — check connection";
       }
       setFormError(msg);
+      setFormWarning(null);
       setFormSuccess(null);
     },
   });
@@ -539,6 +548,7 @@ export default function ManualTradingPanelPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
+    setFormWarning(null);
     if (!investmentAmount || Number(investmentAmount) <= 0) {
       setFormError("Enter a valid investment amount");
       return;
@@ -892,6 +902,11 @@ export default function ManualTradingPanelPage() {
                 </div>
               )}
 
+              {formWarning && (
+                <p className="text-xs text-amber-400 bg-amber-500/[0.08] border border-amber-500/20 rounded-lg px-3 py-2">
+                  {formWarning}
+                </p>
+              )}
               {formError && (
                 <p className="text-xs text-red-400 bg-red-500/[0.08] border border-red-500/20 rounded-lg px-3 py-2">
                   {formError}

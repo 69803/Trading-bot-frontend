@@ -255,6 +255,7 @@ function TradeStep({ onSuccess }: { onSuccess: () => void }) {
   const [limitPrice, setLimitPrice] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
 
   const { data: balanceData } = useQuery<BalanceResponse>({
     queryKey: ["balance"],
@@ -297,7 +298,14 @@ function TradeStep({ onSuccess }: { onSuccess: () => void }) {
     },
     onError: (err: unknown) => {
       const e = err as { response?: { data?: { detail?: string } } };
-      setError(e.response?.data?.detail ?? "Error al colocar la orden");
+      const detail = e.response?.data?.detail ?? "Error al colocar la orden";
+      if (detail.toLowerCase().startsWith("market is closed")) {
+        setWarning("Market closed — order not submitted");
+        setError(null);
+      } else {
+        setError(detail);
+        setWarning(null);
+      }
     },
   });
 
@@ -463,7 +471,13 @@ function TradeStep({ onSuccess }: { onSuccess: () => void }) {
         </div>
       )}
 
-      {/* Error / Success */}
+      {/* Error / Warning / Success */}
+      {warning && (
+        <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-amber-500/[0.08] border border-amber-500/20 text-xs text-amber-400">
+          <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+          {warning}
+        </div>
+      )}
       {error && (
         <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-red-500/[0.08] border border-red-500/20 text-xs text-red-400">
           <AlertTriangle className="w-3.5 h-3.5 shrink-0" />

@@ -45,6 +45,7 @@ export default function OrdersPage() {
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [form, setForm] = useState<NewOrderForm>(DEFAULT_FORM);
   const [formError, setFormError] = useState<string | null>(null);
+  const [formWarning, setFormWarning] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery<OrdersResponse>({
     queryKey: ["orders", status, symbolFilter, page],
@@ -83,10 +84,15 @@ export default function OrdersPage() {
     onError: (err: unknown) => {
       const axiosErr = err as { response?: { data?: { detail?: string | { msg: string }[] } } };
       const detail = axiosErr.response?.data?.detail;
-      if (Array.isArray(detail)) {
+      if (typeof detail === "string" && detail.toLowerCase().startsWith("market is closed")) {
+        setFormWarning("Market closed — order not submitted");
+        setFormError(null);
+      } else if (Array.isArray(detail)) {
         setFormError(detail.map((d) => d.msg).join("; "));
+        setFormWarning(null);
       } else {
         setFormError(detail || "Failed to place order. Please try again.");
+        setFormWarning(null);
       }
     },
   });
@@ -385,6 +391,11 @@ export default function OrdersPage() {
             </div>
 
             <form onSubmit={handleCreate} className="px-5 py-5 space-y-4">
+              {formWarning && (
+                <div className="p-3 bg-amber-500/[0.08] border border-amber-500/20 rounded-lg text-amber-400 text-xs">
+                  {formWarning}
+                </div>
+              )}
               {formError && (
                 <div className="p-3 bg-red-500/[0.08] border border-red-500/20 rounded-lg text-red-400 text-xs">
                   {formError}
