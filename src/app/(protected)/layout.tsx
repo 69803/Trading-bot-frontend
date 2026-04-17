@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/authStore";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
@@ -12,13 +13,25 @@ export default function ProtectedLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const token = useAuthStore((s) => s.token);
+  const token       = useAuthStore((s) => s.token);
+  const accountMode = useAuthStore((s) => s.accountMode);
+  const queryClient = useQueryClient();
+  const prevMode    = useRef(accountMode);
 
   useEffect(() => {
     if (!token) {
       router.replace("/login");
     }
   }, [token, router]);
+
+  // When account mode changes, invalidate ALL cached queries so every page
+  // re-fetches with the new X-Account-Mode header automatically.
+  useEffect(() => {
+    if (prevMode.current !== accountMode) {
+      prevMode.current = accountMode;
+      queryClient.invalidateQueries();
+    }
+  }, [accountMode, queryClient]);
 
   if (!token) {
     return (

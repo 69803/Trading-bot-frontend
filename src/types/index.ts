@@ -1,3 +1,5 @@
+export type AccountMode = "paper" | "live";
+
 export interface User {
   id: string;
   email: string;

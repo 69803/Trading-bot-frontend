@@ -3,7 +3,7 @@ import { API_URL } from "@/config/constants";
 
 const api = axios.create({ baseURL: API_URL });
 
-// Request interceptor: attach Bearer token from localStorage
+// Request interceptor: attach Bearer token + X-Account-Mode from localStorage
 api.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
     let token = localStorage.getItem("access_token");
@@ -29,6 +29,19 @@ api.interceptors.request.use((config) => {
     } else {
       console.log("AUTH HEADER ATTACHED: NO", config.url);
     }
+
+    // Attach account mode header — read from Zustand persisted state
+    let accountMode = "paper";
+    try {
+      const authStorage = localStorage.getItem("auth-storage");
+      if (authStorage) {
+        const parsed = JSON.parse(authStorage);
+        accountMode = parsed?.state?.accountMode ?? "paper";
+      }
+    } catch {
+      // default to paper on parse error — never accidentally use live
+    }
+    config.headers["X-Account-Mode"] = accountMode;
   }
   return config;
 });
