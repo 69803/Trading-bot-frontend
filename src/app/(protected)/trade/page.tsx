@@ -621,6 +621,13 @@ export default function TradePage() {
         </span>
       </div>
 
+      {/* ── Stale live balance warning ─────────────────────────────────────── */}
+      {isLiveMode && (balanceData as { stale?: boolean })?.stale && (
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/[0.08] border border-amber-500/20 text-[11px] text-amber-400">
+          ⚠ Live balance may be outdated — Alpaca unreachable
+        </div>
+      )}
+
       {/* ── Balance bar ────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-4 py-2.5 bg-[#0d1117] border border-[#1e2329] rounded-xl">
         <div className="flex items-center gap-5">
@@ -654,14 +661,19 @@ export default function TradePage() {
           )}
         </div>
         {isLiveMode ? (
-          <a
-            href="https://app.alpaca.markets"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-4 py-1.5 bg-white/[0.06] hover:bg-white/[0.10] border border-white/[0.1] text-slate-300 text-xs font-medium rounded-lg transition-colors"
-          >
-            Fund via Alpaca ↗
-          </a>
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] text-slate-600 hidden sm:block">
+              Deposits handled securely by Alpaca
+            </span>
+            <a
+              href="https://app.alpaca.markets"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-1.5 bg-white/[0.06] hover:bg-white/[0.10] border border-white/[0.1] text-slate-300 text-xs font-medium rounded-lg transition-colors"
+            >
+              Fund via Alpaca ↗
+            </a>
+          </div>
         ) : depositOpen ? (
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">

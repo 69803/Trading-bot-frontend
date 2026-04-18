@@ -243,6 +243,11 @@ export default function DashboardPage() {
   const trades: Trade[] = tradesData?.items ?? [];
   const positions: Position[] = openPositions ?? [];
 
+  // In live mode, KPI cards show Alpaca data instead of local DB values
+  const displayBalance  = isLiveMode ? (liveBalance?.cash_balance  ?? summary?.balance  ?? 0) : (summary?.balance  ?? 0);
+  const displayEquity   = isLiveMode ? (liveBalance?.equity         ?? summary?.equity   ?? 0) : (summary?.equity   ?? 0);
+  const isLiveStale     = isLiveMode && (liveBalance?.stale === true);
+
   const pnlTrend = (summary?.pnl ?? 0) >= 0 ? "positive" : "negative";
   const dailyTrend = (summary?.daily_pnl ?? 0) >= 0 ? "positive" : "negative";
 
@@ -286,15 +291,26 @@ export default function DashboardPage() {
             )}
           </Button>
           {isLiveMode ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => window.open("https://app.alpaca.markets", "_blank")}
-              title="Opens your Alpaca account page to deposit real funds"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Fund via Alpaca ↗
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => refetchLiveBalance()}
+                title="Sync balance from Alpaca"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Sync Balance
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.open("https://app.alpaca.markets", "_blank")}
+                title="Opens your Alpaca account page to deposit real funds"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Fund via Alpaca ↗
+              </Button>
+            </>
           ) : (
             <Button
               variant="outline"
@@ -322,26 +338,50 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* Live balance source indicator + stale warning */}
+      {isLiveMode && (
+        <div className="flex items-center justify-between px-4 py-2 rounded-lg border border-white/[0.06] bg-white/[0.02]">
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+            <span className="text-[11px] text-slate-500">
+              Deposits are handled securely by Alpaca
+            </span>
+          </div>
+          {isLiveStale && (
+            <span className="text-[11px] text-amber-400 font-medium">
+              ⚠ Live balance may be outdated — click Sync Balance
+            </span>
+          )}
+          {!isLiveStale && liveBalance && (
+            <span className="text-[11px] text-slate-600">
+              Source: Alpaca live · auto-refresh every 30s
+            </span>
+          )}
+        </div>
+      )}
+
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <KPICard
           title="Cash Balance"
-          value={formatCurrency(summary?.balance ?? 0)}
+          value={formatCurrency(displayBalance)}
           icon={DollarSign}
           trend="neutral"
           accentColor="blue"
-          loading={summaryLoading}
+          loading={summaryLoading && !liveBalance}
         />
         <KPICard
           title="Total Equity"
-          value={formatCurrency(summary?.equity ?? 0)}
-          subtitle={summary && (summary.equity - summary.balance) !== 0
-            ? `${(summary.equity - summary.balance) >= 0 ? "+" : ""}${formatCurrency(summary.equity - summary.balance)} in positions`
-            : undefined}
+          value={formatCurrency(displayEquity)}
+          subtitle={isLiveMode && liveBalance?.buying_power != null
+            ? `Buying power: ${formatCurrency(liveBalance.buying_power)}`
+            : (summary && (summary.equity - summary.balance) !== 0
+                ? `${(summary.equity - summary.balance) >= 0 ? "+" : ""}${formatCurrency(summary.equity - summary.balance)} in positions`
+                : undefined)}
           icon={TrendingUp}
           trend="neutral"
           accentColor="blue"
-          loading={summaryLoading}
+          loading={summaryLoading && !liveBalance}
         />
         <KPICard
           title="Total P&L"
