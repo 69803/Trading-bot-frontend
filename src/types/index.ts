@@ -304,6 +304,91 @@ export interface FullTokenResponse {
   token_type: string;
 }
 
+export interface CustomBotConfig {
+  description?: string;
+  color: string;
+  direction: "both" | "long_only" | "short_only";
+  trade_stocks: boolean;
+  trade_forex: boolean;
+  trade_crypto: boolean;
+  trade_commodities: boolean;
+  allowed_symbols: string[];
+  blocked_symbols: string[];
+  timeframe: string;
+  confirmation_timeframe: string;
+  min_confidence_score: number;
+  min_rr_ratio: number;
+  use_technical_indicators: boolean;
+  allow_reversals: boolean;
+  allow_averaging_down: boolean;
+  allow_pyramiding: boolean;
+  run_interval_seconds: number;
+  cooldown_seconds: number;
+  per_symbol_max_positions: number;
+  ema_fast: number;
+  ema_slow: number;
+  rsi_period: number;
+  rsi_overbought: number;
+  rsi_oversold: number;
+  risk_level: "conservative" | "moderate" | "aggressive";
+  risk_per_trade_pct: number;
+  max_drawdown_pct: number;
+  max_open_positions: number;
+  max_position_size_pct: number;
+  daily_loss_limit_pct: number;
+  stop_after_consecutive_losses: number;
+  daily_profit_target_pct: number;
+  stop_loss_pct: number;
+  take_profit_pct: number;
+  trailing_stop: boolean;
+  trailing_stop_pct: number;
+  breakeven: boolean;
+  breakeven_trigger_pct: number;
+  partial_close: boolean;
+  partial_close_pct: number;
+  max_trade_duration_hours: number;
+  close_end_of_day: boolean;
+  only_market_hours: boolean;
+  trade_premarket: boolean;
+  trade_after_hours: boolean;
+  session_filter: string;
+  volatility_filter: boolean;
+  volume_filter: boolean;
+  trend_filter: boolean;
+  news_filter: boolean;
+  spread_filter: boolean;
+  investment_amount: number;
+  capital_allocation_pct: number;
+  priority: number;
+  enabled_on_save: boolean;
+}
+
+export interface CustomBot {
+  id: string;
+  user_id: string;
+  name: string;
+  bot_id: string;
+  description?: string;
+  color: string;
+  config: CustomBotConfig;
+  is_enabled: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CustomBotListItem {
+  id: string;
+  name: string;
+  bot_id: string;
+  color: string;
+  is_enabled: boolean;
+  is_running: boolean;
+  cycles_run: number;
+  last_log?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface MarketStatus {
   /** true only during regular session */
   is_open: boolean;

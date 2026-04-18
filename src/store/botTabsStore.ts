@@ -283,10 +283,10 @@ interface BotTabsState {
   tabs: BotTab[];
   selectedBotId: string | null;
 
-  addTab:       (id: string) => { success: boolean; message?: string };
-  removeTab:    (id: string) => void;
-  hasTab:       (id: string) => boolean;
-  setSelectedBot: (id: string | null) => void;
+  addTab:        (id: string, meta?: { name: string; color: string }) => { success: boolean; message?: string };
+  removeTab:     (id: string) => void;
+  hasTab:        (id: string) => boolean;
+  setSelectedBot:(id: string | null) => void;
 }
 
 export const useBotTabsStore = create<BotTabsState>()(
@@ -295,22 +295,21 @@ export const useBotTabsStore = create<BotTabsState>()(
       tabs: [],
       selectedBotId: null,
 
-      addTab: (id: string) => {
-        const meta = BOT_META[id];
-        if (!meta) return { success: false, message: "Bot desconocido" };
+      addTab: (id: string, meta?: { name: string; color: string }) => {
+        const resolved = BOT_META[id] ?? meta;
+        if (!resolved) return { success: false, message: "Bot desconocido" };
 
         if (get().tabs.some((t) => t.id === id)) {
           return {
             success: false,
-            message: `Ya el Bot ${meta.name} está operando en este momento`,
+            message: `Ya el Bot ${resolved.name} está operando en este momento`,
           };
         }
 
-        const newTab = { id, name: meta.name, color: meta.color };
+        const newTab = { id, name: resolved.name, color: resolved.color };
         const currentSelected = get().selectedBotId;
         set((state) => ({
           tabs: [...state.tabs, newTab],
-          // Auto-select if nothing is selected
           selectedBotId: currentSelected ?? id,
         }));
         return { success: true };
@@ -319,13 +318,10 @@ export const useBotTabsStore = create<BotTabsState>()(
       removeTab: (id: string) => {
         const { tabs, selectedBotId } = get();
         const newTabs = tabs.filter((t) => t.id !== id);
-
         let newSelected = selectedBotId;
         if (selectedBotId === id) {
-          // Select first remaining tab, or null if none
           newSelected = newTabs.length > 0 ? newTabs[0].id : null;
         }
-
         set({ tabs: newTabs, selectedBotId: newSelected });
       },
 

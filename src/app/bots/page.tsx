@@ -259,6 +259,92 @@ export default function BotsPage() {
           </button>
         </div>
 
+        {/* ── Crea tu propio bot ──────────────────────────────────── */}
+        <div style={{
+          marginTop: 56, width: "100%", maxWidth: 1100,
+          display: "flex", flexDirection: "column", alignItems: "center",
+        }}>
+          <div style={{
+            width: "100%",
+            background: "linear-gradient(135deg, rgba(99,102,241,0.10) 0%, rgba(14,165,233,0.08) 100%)",
+            border: "1.5px dashed rgba(99,102,241,0.45)",
+            borderRadius: 20,
+            padding: "48px 40px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 16,
+            position: "relative",
+            overflow: "hidden",
+          }}>
+            {/* glow */}
+            <div style={{
+              position: "absolute", width: 300, height: 300, borderRadius: "50%",
+              background: "radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)",
+              top: "-80px", right: "-40px", pointerEvents: "none",
+            }} />
+
+            {/* icon */}
+            <div style={{
+              width: 64, height: 64, borderRadius: 16,
+              background: "linear-gradient(135deg,#6366f1,#0ea5e9)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 28, boxShadow: "0 8px 32px rgba(99,102,241,0.4)",
+            }}>
+              🛠️
+            </div>
+
+            <h2 style={{
+              color: "#fff", fontSize: 26, fontWeight: 800, textAlign: "center",
+              margin: 0, letterSpacing: -0.3,
+            }}>
+              Crea tu propio bot
+            </h2>
+
+            <p style={{
+              color: "rgba(255,255,255,0.6)", fontSize: 15, textAlign: "center",
+              maxWidth: 520, lineHeight: 1.65, margin: 0,
+            }}>
+              Construye un bot automático 100% personalizado. Define mercados, símbolos, estrategia, riesgo, filtros y condiciones de entrada/salida. Se ejecuta igual que los demás bots del sistema.
+            </p>
+
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center", marginTop: 4 }}>
+              {["Stocks", "Forex", "Crypto", "Commodities", "Multi-símbolo", "Risk control", "TP/SL dinámico", "Filtros de sesión"].map(tag => (
+                <span key={tag} style={{
+                  background: "rgba(99,102,241,0.12)",
+                  border: "1px solid rgba(99,102,241,0.3)",
+                  borderRadius: 20, padding: "4px 12px",
+                  color: "rgba(255,255,255,0.75)", fontSize: 12, fontWeight: 500,
+                }}>
+                  {tag}
+                </span>
+              ))}
+            </div>
+
+            <button
+              onClick={() => router.push("/my-bots/new")}
+              style={{
+                marginTop: 12,
+                padding: "13px 40px",
+                background: "linear-gradient(135deg, #6366f1 0%, #0ea5e9 100%)",
+                border: "none", borderRadius: 12,
+                color: "#fff", fontSize: 15, fontWeight: 700,
+                cursor: "pointer", letterSpacing: 0.4,
+                boxShadow: "0 4px 28px rgba(99,102,241,0.45)",
+                transition: "filter 0.2s, transform 0.15s",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.filter = "brightness(1.15)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+              onMouseLeave={e => { e.currentTarget.style.filter = "brightness(1)"; e.currentTarget.style.transform = "translateY(0)"; }}
+            >
+              Crear bot →
+            </button>
+
+            <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 12, marginTop: 4 }}>
+              Puedes crear tantos bots como quieras. Cada uno opera de forma independiente.
+            </p>
+          </div>
+        </div>
+
         {/* sub-text */}
         <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 13, marginTop: 32, textAlign: "center" }}>
           Puedes cambiar de bot en cualquier momento desde tu panel de control.

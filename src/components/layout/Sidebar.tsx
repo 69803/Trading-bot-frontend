@@ -18,6 +18,7 @@ import {
   Bot,
   ChevronDown,
   AlertTriangle,
+  Wrench,
 } from "lucide-react";
 import { useAuthStore, AccountMode } from "@/store/authStore";
 import { cn } from "@/lib/utils";
@@ -25,6 +26,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { label: "Dashboard",    href: "/dashboard",  icon: LayoutDashboard, description: "Overview & P&L" },
   { label: "Bots",         href: "/bots",       icon: Bot,             description: "Seleccionar bot" },
+  { label: "Tus Bots",     href: "/my-bots",    icon: Wrench,          description: "Bots personalizados" },
   { label: "Trade",        href: "/trade",      icon: TrendingUp,      description: "Place orders" },
   { label: "Manual",       href: "/trading",    icon: TrendingUp,      description: "Manual trading" },
   { label: "Orders",       href: "/orders",     icon: ClipboardList,   description: "Order history" },
