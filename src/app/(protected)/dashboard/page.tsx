@@ -163,6 +163,17 @@ export default function DashboardPage() {
   const [showReset, setShowReset] = useState(false);
   const [showDeposit, setShowDeposit] = useState(false);
 
+  // In live mode, sync balance from Alpaca on load and every 30s
+  const { data: liveBalance, refetch: refetchLiveBalance } = useQuery<{
+    cash_balance: number; equity: number; buying_power: number; stale: boolean;
+  }>({
+    queryKey: ["live-balance"],
+    queryFn: async () => (await api.get("/portfolio/live-balance")).data,
+    enabled: isLiveMode,
+    refetchInterval: 30_000,
+    staleTime: 15_000,
+  });
+
   const { data: summary, isLoading: summaryLoading } = useQuery<PortfolioSummary>({
     queryKey: ["portfolio-summary"],
     queryFn: async () => (await api.get("/portfolio/summary")).data,
@@ -274,16 +285,26 @@ export default function DashboardPage() {
               <><Bot className="w-3.5 h-3.5" />Start Bot</>
             )}
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => !isLiveMode && setShowDeposit(true)}
-            disabled={isLiveMode}
-            title={isLiveMode ? "Live deposits — fund your account directly via Alpaca" : undefined}
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Add Funds
-          </Button>
+          {isLiveMode ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.open("https://app.alpaca.markets", "_blank")}
+              title="Opens your Alpaca account page to deposit real funds"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Fund via Alpaca ↗
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowDeposit(true)}
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Add Funds
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"

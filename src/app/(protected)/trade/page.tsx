@@ -233,12 +233,13 @@ export default function TradePage() {
 
   // ── Queries ─────────────────────────────────────────────────────────────────
 
-  // Balance
+  // Balance — live mode reads from Alpaca directly; paper reads local DB
   const { data: balanceData, refetch: refetchBalance } = useQuery<BalanceResponse>({
-    queryKey: ["balance"],
-    queryFn: async () => (await api.get("/portfolio/balance")).data,
-    refetchInterval: 10_000,
-    staleTime: 5_000,
+    queryKey: ["balance", accountMode],
+    queryFn: async () =>
+      (await api.get(isLiveMode ? "/portfolio/live-balance" : "/portfolio/balance")).data,
+    refetchInterval: isLiveMode ? 30_000 : 10_000,
+    staleTime: isLiveMode ? 15_000 : 5_000,
   });
 
   // Batch-fetch quotes for ALL pinned symbols (positions symbols added after positions load)
@@ -653,9 +654,14 @@ export default function TradePage() {
           )}
         </div>
         {isLiveMode ? (
-          <span className="text-[10px] text-slate-500 italic">
-            Fund via Alpaca directly
-          </span>
+          <a
+            href="https://app.alpaca.markets"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-1.5 bg-white/[0.06] hover:bg-white/[0.10] border border-white/[0.1] text-slate-300 text-xs font-medium rounded-lg transition-colors"
+          >
+            Fund via Alpaca ↗
+          </a>
         ) : depositOpen ? (
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
