@@ -47,6 +47,7 @@ import Lottie from "lottie-react";
 import aiRobotAnimation from "@/data/ai-robot.json";
 import { useRouter } from "next/navigation";
 import { useBotTabsStore } from "@/store/botTabsStore";
+import { useAuthStore } from "@/store/authStore";
 
 function DepositModal({
   onClose,
@@ -157,6 +158,8 @@ export default function DashboardPage() {
   const qc = useQueryClient();
   const router = useRouter();
   const { selectedBotId } = useBotTabsStore();
+  const accountMode = useAuthStore((s) => s.accountMode);
+  const isLiveMode = accountMode === "live";
   const [showReset, setShowReset] = useState(false);
   const [showDeposit, setShowDeposit] = useState(false);
 
@@ -271,11 +274,23 @@ export default function DashboardPage() {
               <><Bot className="w-3.5 h-3.5" />Start Bot</>
             )}
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setShowDeposit(true)}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => !isLiveMode && setShowDeposit(true)}
+            disabled={isLiveMode}
+            title={isLiveMode ? "Live deposits — fund your account directly via Alpaca" : undefined}
+          >
             <Plus className="w-3.5 h-3.5" />
             Add Funds
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setShowReset(true)}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => !isLiveMode && setShowReset(true)}
+            disabled={isLiveMode}
+            title={isLiveMode ? "Cannot reset live account" : undefined}
+          >
             <RotateCcw className="w-3.5 h-3.5" />
             Reset
           </Button>

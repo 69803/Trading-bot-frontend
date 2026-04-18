@@ -372,6 +372,7 @@ export default function TradePage() {
 
   // ── Deposit ─────────────────────────────────────────────────────────────────
   const handleDeposit = async () => {
+    if (isLiveMode) return; // hard guard — live deposits are never simulated locally
     const amount = parseFloat(depositAmount);
     if (!amount || amount <= 0) return;
     setDepositLoading(true);
@@ -651,7 +652,11 @@ export default function TradePage() {
             </div>
           )}
         </div>
-        {depositOpen ? (
+        {isLiveMode ? (
+          <span className="text-[10px] text-slate-500 italic">
+            Fund via Alpaca directly
+          </span>
+        ) : depositOpen ? (
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
               {[100, 500, 1000, 5000, 10000].map((amt) => (
