@@ -32,6 +32,7 @@ import {
 import LiveChart from "@/components/trade/LiveChart";
 import AssetSelector from "@/components/trade/AssetSelector";
 import { useBotTabsStore, BOT_META, symbolBelongsToBot } from "@/store/botTabsStore";
+import { useAuthStore } from "@/store/authStore";
 
 type Side = "buy" | "sell";
 type OrderType = "market" | "limit";
@@ -208,6 +209,8 @@ function AssetTab({
 export default function TradePage() {
   const qc = useQueryClient();
   const { selectedBotId } = useBotTabsStore();
+  const accountMode = useAuthStore((s) => s.accountMode);
+  const isLiveMode = accountMode === "live";
 
   // Multi-symbol state (IQ Option-style tab bar)
   const [pinnedSymbols, setPinnedSymbols] = useState<string[]>([SYMBOLS[0]]);
@@ -221,6 +224,7 @@ export default function TradePage() {
   const [timeframe, setTimeframe] = useState("1h");
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
+  const [liveConfirmOpen, setLiveConfirmOpen] = useState(false);
   const [depositLoading, setDepositLoading] = useState(false);
   const [depositOpen, setDepositOpen] = useState(false);
   const [depositAmount, setDepositAmount] = useState("1000");
@@ -536,6 +540,11 @@ export default function TradePage() {
       setFormError("Enter a valid limit price");
       return;
     }
+    // In live mode, require explicit confirmation before submitting a real order
+    if (isLiveMode) {
+      setLiveConfirmOpen(true);
+      return;
+    }
     orderMutation.mutate();
   };
 
@@ -547,7 +556,59 @@ export default function TradePage() {
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
+    <>
+    {/* ── Live order confirmation modal ─────────────────────────────────────── */}
+    {liveConfirmOpen && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setLiveConfirmOpen(false)} />
+        <div className="relative w-full max-w-sm mx-4 bg-[#0A1120] border border-red-500/30 rounded-2xl shadow-2xl overflow-hidden">
+          <div className="h-1 w-full bg-gradient-to-r from-red-600 to-red-400" />
+          <div className="p-5">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-9 h-9 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center shrink-0">
+                <AlertCircle className="w-4 h-4 text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white mb-1">Real Money Order</h3>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  You are about to place a real order using{" "}
+                  <span className="text-red-400 font-semibold">live funds</span>.
+                  This cannot be undone once submitted to Alpaca.
+                </p>
+              </div>
+            </div>
+            <div className="bg-red-500/[0.06] border border-red-500/20 rounded-lg px-3 py-2 mb-4 text-xs text-red-300/80">
+              <span className="font-semibold">{side.toUpperCase()}</span>{" "}
+              {activeSymbol} — ${Number(investmentAmount).toLocaleString()}
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setLiveConfirmOpen(false)}
+                className="flex-1 py-2 rounded-lg border border-white/[0.08] text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => { setLiveConfirmOpen(false); orderMutation.mutate(); }}
+                className="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-xs font-bold text-white transition-colors"
+              >
+                Confirm — Real Money
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+
     <div className="flex flex-col gap-4 h-full">
+
+      {/* ── Account mode banner ────────────────────────────────────────────── */}
+      {isLiveMode && (
+        <div className="flex items-center gap-2 px-4 py-2 rounded-xl border border-red-500/30 bg-red-500/[0.06] text-xs font-semibold text-red-400">
+          <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse shrink-0" />
+          REAL MONEY MODE — Orders execute with live funds
+        </div>
+      )}
 
       {/* ── Manual trading badge ───────────────────────────────────────────── */}
       <div className="flex items-center gap-2 px-4 py-2 rounded-xl border border-blue-500/20 bg-blue-500/[0.05] text-xs font-semibold text-blue-400">
@@ -1260,5 +1321,6 @@ export default function TradePage() {
         pinnedSymbols={pinnedSymbols}
       />
     </div>
+    </>
   );
 }
