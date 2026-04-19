@@ -27,7 +27,7 @@ const navItems = [
   { label: "Dashboard",    href: "/dashboard",  icon: LayoutDashboard, description: "Overview & P&L" },
   { label: "Bots",         href: "/bots",       icon: Bot,             description: "Seleccionar bot" },
   { label: "Tus Bots",     href: "/my-bots",    icon: Wrench,          description: "Bots personalizados" },
-  { label: "Trade",        href: "/trade",      icon: TrendingUp,      description: "Place orders" },
+  { label: "Trade Bots",   href: "/trade",      icon: TrendingUp,      description: "Bot positions" },
   { label: "Manual",       href: "/trading",    icon: TrendingUp,      description: "Manual trading" },
   { label: "Orders",       href: "/orders",     icon: ClipboardList,   description: "Order history" },
   { label: "Strategy",     href: "/strategy",   icon: Cpu,             description: "EMA + RSI config" },

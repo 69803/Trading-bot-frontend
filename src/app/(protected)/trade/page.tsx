@@ -278,22 +278,26 @@ export default function TradePage() {
     });
 
   const { data: ordersData } = useQuery<OrdersResponse>({
-    queryKey: ["orders-trade"],
-    queryFn: async () => (await api.get("/orders?limit=30")).data,
+    queryKey: ["orders-trade", selectedBotId],
+    queryFn: async () => {
+      const botParam = selectedBotId ? `&bot_id=${selectedBotId}` : "";
+      return (await api.get(`/orders?limit=30${botParam}`)).data;
+    },
     refetchInterval: 8000,
   });
 
   const { data: allPositions } = useQuery<Position[]>({
-    queryKey: ["positions-all"],
-    queryFn: async () =>
-      (await api.get("/portfolio/positions?open_only=false&limit=100")).data,
+    queryKey: ["positions-all", selectedBotId],
+    queryFn: async () => {
+      const botParam = selectedBotId ? `&bot_id=${selectedBotId}` : "";
+      return (await api.get(`/portfolio/positions?open_only=false&limit=100${botParam}`)).data;
+    },
     refetchInterval: 4000,
   });
 
   const positions = allPositions ?? [];
-  // Bot trading page: only show positions opened by bots (bot_id is set)
-  const openPositions   = positions.filter((p) =>  p.is_open && !!p.bot_id);
-  const closedPositions = positions.filter((p) => !p.is_open && !!p.bot_id);
+  const openPositions   = positions.filter((p) =>  p.is_open);
+  const closedPositions = positions.filter((p) => !p.is_open);
 
   // Extra quotes for any open-position symbols not already pinned
   const openSymbols = openPositions.map((p) => p.symbol);
@@ -393,8 +397,8 @@ export default function TradePage() {
     mutationFn: async (pos: Position) =>
       api.post(`/portfolio/positions/${pos.id}/close`),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["positions-all"] });
-      qc.invalidateQueries({ queryKey: ["orders-trade"] });
+      qc.invalidateQueries({ queryKey: ["positions-all", selectedBotId] });
+      qc.invalidateQueries({ queryKey: ["orders-trade", selectedBotId] });
       qc.invalidateQueries({ queryKey: ["balance"] });
       qc.invalidateQueries({ queryKey: ["portfolio-summary"] });
     },
@@ -410,7 +414,7 @@ export default function TradePage() {
     onSuccess: () => {
       setShowClearHistoryConfirm(false);
       setDeleteError(null);
-      qc.invalidateQueries({ queryKey: ["positions-all"] });
+      qc.invalidateQueries({ queryKey: ["positions-all", selectedBotId] });
       qc.invalidateQueries({ queryKey: ["balance"] });
     },
     onError: () => {
@@ -429,7 +433,7 @@ export default function TradePage() {
       console.log("[DELETE] Success — invalidating queries for posId:", posId);
       setDeleteConfirmId(null);
       setDeleteError(null);
-      qc.invalidateQueries({ queryKey: ["positions-all"] });
+      qc.invalidateQueries({ queryKey: ["positions-all", selectedBotId] });
       qc.invalidateQueries({ queryKey: ["balance"] });
       qc.invalidateQueries({ queryKey: ["portfolio-summary"] });
     },
@@ -453,8 +457,8 @@ export default function TradePage() {
       await Promise.all(
         open.map((pos) => api.post(`/portfolio/positions/${pos.id}/close`))
       );
-      qc.invalidateQueries({ queryKey: ["positions-all"] });
-      qc.invalidateQueries({ queryKey: ["orders-trade"] });
+      qc.invalidateQueries({ queryKey: ["positions-all", selectedBotId] });
+      qc.invalidateQueries({ queryKey: ["orders-trade", selectedBotId] });
       qc.invalidateQueries({ queryKey: ["balance"] });
       qc.invalidateQueries({ queryKey: ["portfolio-summary"] });
     } finally {
@@ -512,8 +516,8 @@ export default function TradePage() {
         setFormSuccess("Order placed!");
       }
       setFormError(null);
-      qc.invalidateQueries({ queryKey: ["orders-trade"] });
-      qc.invalidateQueries({ queryKey: ["positions-all"] });
+      qc.invalidateQueries({ queryKey: ["orders-trade", selectedBotId] });
+      qc.invalidateQueries({ queryKey: ["positions-all", selectedBotId] });
       qc.invalidateQueries({ queryKey: ["balance"] });
       qc.invalidateQueries({ queryKey: ["portfolio-summary"] });
       setTimeout(() => setFormSuccess(null), 4000);
@@ -528,7 +532,7 @@ export default function TradePage() {
 
   const cancelMutation = useMutation({
     mutationFn: async (id: string) => api.delete(`/orders/${id}`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["orders-trade"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["orders-trade", selectedBotId] }),
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -612,12 +616,12 @@ export default function TradePage() {
         </div>
       )}
 
-      {/* ── Manual trading badge ───────────────────────────────────────────── */}
+      {/* ── Bot trades badge ───────────────────────────────────────────────── */}
       <div className="flex items-center gap-2 px-4 py-2 rounded-xl border border-blue-500/20 bg-blue-500/[0.05] text-xs font-semibold text-blue-400">
         <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />
-        Manual Trading
+        Bot Trades
         <span className="ml-auto font-normal text-blue-400/60">
-          Solo posiciones manuales — operaciones de bots no se muestran aquí
+          {selectedBotId ? `Mostrando posiciones del bot: ${selectedBotId}` : "Selecciona un bot para ver sus operaciones"}
         </span>
       </div>
 
