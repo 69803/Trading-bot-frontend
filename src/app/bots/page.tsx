@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Lottie from "lottie-react";
+import astronautAnimation from "../../../public/astronaut.json";
 
 // Overlay button positions as % of image width/height
 // Calibrated to the 5 bot cards in bots.png
@@ -284,14 +286,9 @@ export default function BotsPage() {
               top: "-80px", right: "-40px", pointerEvents: "none",
             }} />
 
-            {/* icon */}
-            <div style={{
-              width: 64, height: 64, borderRadius: 16,
-              background: "linear-gradient(135deg,#6366f1,#0ea5e9)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 28, boxShadow: "0 8px 32px rgba(99,102,241,0.4)",
-            }}>
-              🛠️
+            {/* lottie astronaut */}
+            <div style={{ width: 180, height: 180, marginBottom: -8 }}>
+              <Lottie animationData={astronautAnimation} loop autoplay />
             </div>
 
             <h2 style={{
