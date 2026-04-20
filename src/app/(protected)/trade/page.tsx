@@ -13,6 +13,7 @@ import type {
   Quote,
   BalanceResponse,
   MarketStatus,
+  CustomBotListItem,
 } from "@/types";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -208,7 +209,7 @@ function AssetTab({
 // ─── Main page ────────────────────────────────────────────────────────────────
 export default function TradePage() {
   const qc = useQueryClient();
-  const { selectedBotId } = useBotTabsStore();
+  const { selectedBotId, tabs, setSelectedBot } = useBotTabsStore();
   const accountMode = useAuthStore((s) => s.accountMode);
   const isLiveMode = accountMode === "live";
 
@@ -241,6 +242,21 @@ export default function TradePage() {
     refetchInterval: isLiveMode ? 30_000 : 10_000,
     staleTime: isLiveMode ? 15_000 : 5_000,
   });
+
+  // Custom bots — needed to build the bot selector on this page
+  const { data: customBots } = useQuery<CustomBotListItem[]>({
+    queryKey: ["custom-bots-list"],
+    queryFn: async () => (await api.get("/custom-bots")).data,
+    staleTime: 30_000,
+  });
+
+  // All selectable bots: pre-defined tabs + custom bots (no duplicates)
+  const predefinedBotEntries = tabs.map((t) => ({ id: t.id, name: t.name, color: t.color }));
+  const customBotEntries     = (customBots ?? []).map((cb) => ({ id: cb.bot_id, name: cb.name, color: cb.color }));
+  const allSelectableBots    = [
+    ...predefinedBotEntries,
+    ...customBotEntries.filter((cb) => !predefinedBotEntries.some((pb) => pb.id === cb.id)),
+  ];
 
   // Batch-fetch quotes for ALL pinned symbols (positions symbols added after positions load)
   const { data: tabQuotesData } = useQuery<QuotesResponse>({
@@ -279,20 +295,18 @@ export default function TradePage() {
 
   const { data: ordersData } = useQuery<OrdersResponse>({
     queryKey: ["orders-trade", selectedBotId],
-    queryFn: async () => {
-      const botParam = selectedBotId ? `&bot_id=${selectedBotId}` : "";
-      return (await api.get(`/orders?limit=30${botParam}`)).data;
-    },
+    queryFn: async () =>
+      (await api.get(`/orders?limit=30&bot_id=${selectedBotId}`)).data,
     refetchInterval: 8000,
+    enabled: !!selectedBotId,
   });
 
   const { data: allPositions } = useQuery<Position[]>({
     queryKey: ["positions-all", selectedBotId],
-    queryFn: async () => {
-      const botParam = selectedBotId ? `&bot_id=${selectedBotId}` : "";
-      return (await api.get(`/portfolio/positions?open_only=false&limit=100${botParam}`)).data;
-    },
+    queryFn: async () =>
+      (await api.get(`/portfolio/positions?open_only=false&limit=100&bot_id=${selectedBotId}`)).data,
     refetchInterval: 4000,
+    enabled: !!selectedBotId,
   });
 
   const positions = allPositions ?? [];
@@ -616,13 +630,56 @@ export default function TradePage() {
         </div>
       )}
 
-      {/* ── Bot trades badge ───────────────────────────────────────────────── */}
-      <div className="flex items-center gap-2 px-4 py-2 rounded-xl border border-blue-500/20 bg-blue-500/[0.05] text-xs font-semibold text-blue-400">
-        <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />
-        Bot Trades
-        <span className="ml-auto font-normal text-blue-400/60">
-          {selectedBotId ? `Mostrando posiciones del bot: ${selectedBotId}` : "Selecciona un bot para ver sus operaciones"}
-        </span>
+      {/* ── Bot selector ──────────────────────────────────────────────────── */}
+      <div className="bg-[#0b0e11] border border-[#1e2329] rounded-xl px-4 py-3">
+        <div className="flex items-center gap-2 mb-2.5">
+          <span className="text-[10px] font-semibold text-[#848e9c] uppercase tracking-wider">Bot activo</span>
+          {selectedBotId && (
+            <button
+              onClick={() => setSelectedBot(null)}
+              className="ml-auto text-[10px] text-slate-600 hover:text-slate-400 transition-colors"
+            >
+              Deselect
+            </button>
+          )}
+        </div>
+
+        {allSelectableBots.length === 0 ? (
+          <div className="text-xs text-slate-600 py-1">
+            No hay bots activos.{" "}
+            <a href="/bots" className="text-blue-400/70 hover:text-blue-400 underline underline-offset-2">
+              Activa un bot
+            </a>
+            {" "}o{" "}
+            <a href="/my-bots" className="text-blue-400/70 hover:text-blue-400 underline underline-offset-2">
+              crea uno personalizado
+            </a>.
+          </div>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {allSelectableBots.map((bot) => {
+              const isSelected = selectedBotId === bot.id;
+              return (
+                <button
+                  key={bot.id}
+                  onClick={() => setSelectedBot(bot.id)}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${
+                    isSelected
+                      ? "border-transparent text-white"
+                      : "border-[#1e2329] text-slate-500 hover:text-slate-300 hover:border-slate-600 bg-transparent"
+                  }`}
+                  style={isSelected ? { backgroundColor: bot.color + "22", borderColor: bot.color + "66", color: bot.color } : {}}
+                >
+                  <span
+                    className="w-2 h-2 rounded-full shrink-0"
+                    style={{ backgroundColor: bot.color }}
+                  />
+                  {bot.name}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* ── Stale live balance warning ─────────────────────────────────────── */}
@@ -1048,6 +1105,32 @@ export default function TradePage() {
 
         </div>
       </div>
+
+      {/* ── Empty state: no bot selected ─────────────────────────────────────── */}
+      {!selectedBotId && (
+        <div className="flex flex-col items-center justify-center py-12 gap-3 bg-[#0b0e11] border border-[#1e2329] rounded-xl">
+          <div className="w-10 h-10 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+            <ArrowUpCircle className="w-5 h-5 text-blue-400/60" />
+          </div>
+          <p className="text-sm font-semibold text-slate-400">Selecciona un bot para ver sus operaciones</p>
+          <p className="text-xs text-slate-600 text-center max-w-xs">
+            Elige un bot en el selector de arriba. Cada bot muestra únicamente sus propias posiciones.
+          </p>
+        </div>
+      )}
+
+      {/* ── Empty state: bot selected but no positions ───────────────────────── */}
+      {!!selectedBotId && openPositions.length === 0 && closedPositions.length === 0 && allPositions !== undefined && (
+        <div className="flex flex-col items-center justify-center py-10 gap-2 bg-[#0b0e11] border border-[#1e2329] rounded-xl">
+          <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center">
+            <Clock className="w-4 h-4 text-slate-600" />
+          </div>
+          <p className="text-sm font-semibold text-slate-500">
+            {allSelectableBots.find((b) => b.id === selectedBotId)?.name ?? selectedBotId} — sin posiciones
+          </p>
+          <p className="text-xs text-slate-700">Este bot aún no ha abierto ninguna operación.</p>
+        </div>
+      )}
 
       {/* ── Open positions panel ─────────────────────────────────────────────── */}
       {openPositions.length > 0 && (() => {
